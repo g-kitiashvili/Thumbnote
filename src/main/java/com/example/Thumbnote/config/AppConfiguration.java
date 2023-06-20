@@ -1,7 +1,7 @@
 package com.example.Thumbnote.config;
 
 
-import com.example.Thumbnote.dao.UserDAO;
+import com.example.Thumbnote.dao.AccDAO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -21,7 +21,7 @@ public class AppConfiguration {
         return dataSource;
     }
     @Bean
-    public UserDAO userDAO(DataSource dataSource){
-        return new UserDAO(dataSource);
+    public AccDAO accDAO(DataSource dataSource){
+        return new AccDAO(dataSource);
     }
 }
