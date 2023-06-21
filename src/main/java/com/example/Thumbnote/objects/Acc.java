@@ -1,48 +1,35 @@
-package com.example.Thumbnote.models;
+package com.example.Thumbnote.objects;
 
-import jakarta.persistence.*;
 
+
+import javax.persistence.Entity;
+
+import javax.persistence.*;
 import java.util.Objects;
-
-
 @Entity
 @Table(name = "users")
 public class Acc {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "username", unique = true)
+
     private String username;
 
-    @Column(nullable = false)
-    private String hash_password;
+    @Column(name = "password_hash")
+    private String password_hash;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "email", unique = true)
     private String email;
-
-    // Default constructor
-
-    // Constructor with parameters
-    public Acc(String username, String password, String email) {
+    public Acc(String username, String password_hash, String email) {
         this.username = username;
-        this.hash_password = password;
+        this.password_hash = password_hash;
         this.email = email;
     }
 
     public Acc() {
 
-    }
-
-
-    // Getters and setters for all attributes
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getUsername() {
@@ -53,12 +40,12 @@ public class Acc {
         this.username = username;
     }
 
-    public String getPassword() {
-        return hash_password;
+    public String getPassword_hash() {
+        return password_hash;
     }
 
-    public void setPassword(String password) {
-        this.hash_password = password;
+    public void setPassword_hash(String password_hash) {
+        this.password_hash = password_hash;
     }
 
     public String getEmail() {
@@ -68,12 +55,13 @@ public class Acc {
     public void setEmail(String email) {
         this.email = email;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Acc user = (Acc) o;
-        return Objects.equals(username, user.username);
+        Acc acc = (Acc) o;
+        return Objects.equals(username, acc.username);
     }
 
     @Override
@@ -83,11 +71,18 @@ public class Acc {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "Acc{" +
                 "username='" + username + '\'' +
-                ", password_hash='" + hash_password + '\'' +
+                ", password_hash='" + password_hash + '\'' +
                 ", email='" + email + '\'' +
                 '}';
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
+    }
 }

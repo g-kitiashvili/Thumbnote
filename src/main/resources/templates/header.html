@@ -1,0 +1,23 @@
+<!--<!DOCTYPE html>-->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thumbnote</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header>
+  <nav>
+    <a href="/" class="logo">ThumbNote</a>
+
+    <div>
+      <a th:unless="${username}" th:href="@{/login}">Login</a>
+      <a th:unless="${username}" th:href="@{/register}">Register</a>
+      <a th:if="${username}" th:href="@{/logout}">Log out</a>
+
+    </div>
+  </nav>
+</header>
+<main>
+
