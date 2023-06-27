@@ -46,9 +46,7 @@ public class Validator {
             errors.add(USERNAME_ERROR_MESSAGE);
         }
 
-        if (!isPasswordStrong(password)) {
-            errors.add(PASSWORD_ERROR_MESSAGE);
-        }
+
 
         if (!isEmailAvailable(email)) {
             errors.add(EMAIL_ERROR_MESSAGE);

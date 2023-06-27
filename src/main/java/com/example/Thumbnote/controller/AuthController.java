@@ -32,9 +32,11 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@ModelAttribute("signUpAccountInputForm") Acc account) {
+    public ResponseEntity<?> registerUser(@RequestParam("username") String username,
+                                          @RequestParam("password") String password
+    ,@RequestParam("email") String email) {
         Map<String, Object> response = new HashMap<>();
-        List<String> errors = validator.checkRegisterErrors(account.getUsername(), account.getPassword_hash(), account.getEmail());
+        List<String> errors = validator.checkRegisterErrors(username, password,email);
 
         if (!errors.isEmpty()) {
             response.put("successful", false);
@@ -44,8 +46,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        String hash = SecurityUtils.hashPassword(account.getPassword_hash());
-        boolean success = accDAO.addAccount(account.getUsername(), hash, account.getEmail());
+        String hash = SecurityUtils.hashPassword(password);
+        boolean success = accDAO.addAccount(username, hash, email);
         response.put("successful", success);
 
         if (!success) {
