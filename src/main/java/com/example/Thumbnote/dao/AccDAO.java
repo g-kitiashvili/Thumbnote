@@ -41,6 +41,7 @@ public class AccDAO {
             statement.setString(2, password);
             statement.setString(3, email);
             int rowsAffected = statement.executeUpdate();
+            statement.close();
             return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();

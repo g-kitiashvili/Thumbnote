@@ -21,31 +21,31 @@
                     <h5 class="card-title text-center">Sign Up</h5>
                     <form class="form-signin" th:action="@{/api/register}" th:object="${account}" method="POST">
                         <div class="form-label-group pb-2">
-                            <input type="text" id="inputEmail" class="form-control" placeholder="Email"
+                            <input type="text" noteId="inputEmail" class="form-control" placeholder="Email"
                                    required autofocus th:field="*{email}" >
                             <p class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
                         </div>
 
                         <div class="form-label-group pb-2">
-                            <input type="text" id="inputLogin" class="form-control" placeholder="Login"
+                            <input type="text" noteId="inputLogin" class="form-control" placeholder="Login"
                                    required autofocus th:field="*{login}">
                             <p class="text-danger" th:if="${#fields.hasErrors('login')}" th:errors="*{login}"></p>
                         </div>
 
                         <div class="form-label-group pb-2">
-                            <input type="text" id="inputName" class="form-control" placeholder="Name"
+                            <input type="text" noteId="inputName" class="form-control" placeholder="Name"
                                    required autofocus th:field="*{name}">
                             <p class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
                         </div>
 
                         <div class="form-label-group pb-2">
-                            <input type="password" id="inputPassword" class="form-control" placeholder="Password"
+                            <input type="password" noteId="inputPassword" class="form-control" placeholder="Password"
                                    required autofocus th:field="*{password}">
                             <p class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
                         </div>
 
                         <div class="form-label-group pb-4">
-                            <input type="password" id="inputPasswordAgain" class="form-control" placeholder="Repeat Password" required
+                            <input type="password" noteId="inputPasswordAgain" class="form-control" placeholder="Repeat Password" required
                                    th:field="*{matchingPassword}">
                             <p class="text-danger" th:if="${#fields.hasErrors('matchingPassword')}" th:errors="*{matchingPassword}"></p>
                         </div>

@@ -22,12 +22,12 @@
                     <form class="form-signin" th:action="@{/account/login}"
                           th:object="${logInAccountInputForm}" method="POST">
                         <div class="form-label-group pb-2">
-                            <input type="text" id="inputLogin" class="form-control" placeholder="Login"
+                            <input type="text" noteId="inputLogin" class="form-control" placeholder="Login"
                                    required autofocus th:field="*{login}">
                         </div>
 
                         <div class="form-label-group pb-4">
-                            <input type="password" id="inputPassword" class="form-control" placeholder="Password" required
+                            <input type="password" noteId="inputPassword" class="form-control" placeholder="Password" required
                                    th:field="*{password}">
                         </div>
                         <p th:if="${error == true}" class="card-text text-danger text-center">Wrong login or password</p>
