@@ -8,18 +8,16 @@ public class Note {
     private long noteId;
     private long userId;
     private Date uploadDate;
-    private Date lastUpdateDate;
     private Date lastAccessDate;
     private String noteName;
     private String noteText;
     private List<String> tags;
 
 
-    public Note(long noteId, long userId, String noteName, String noteText) {
+    public Note(long noteId, long userId,Date uploadDate, String noteName, String noteText, List<String> tags) {
         this.noteId = noteId;
         this.userId = userId;
-        this.uploadDate =new Timestamp( System.currentTimeMillis());  ;
-        this.lastUpdateDate = null;
+        this.uploadDate=uploadDate;
         this.lastAccessDate = new Timestamp( System.currentTimeMillis());
         this.noteName = noteName;
         this.noteText = noteText;
@@ -51,13 +49,7 @@ public class Note {
         this.uploadDate = uploadDate;
     }
 
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
 
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
 
     public Date getLastAccessDate() {
         return lastAccessDate;
@@ -90,4 +82,6 @@ public class Note {
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
+
+
 }

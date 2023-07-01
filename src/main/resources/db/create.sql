@@ -12,14 +12,13 @@ CREATE TABLE users (
                        user_id BIGINT AUTO_INCREMENT PRIMARY KEY  ,
                        username VARCHAR(255) NOT NULL unique,
                        password_hash VARCHAR(255) NOT NULL,
-                       email VARCHAR(255) NOT NULL
+                       email VARCHAR(255) NOT NULL unique
 );
 
 create table notes (
         note_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT NOT NULL,
-        upload_date timestamp,
-        last_update date,
+        upload_date timestamp default current_timestamp,
         last_access_date timestamp,
         note_name varchar(255),
         note mediumtext,

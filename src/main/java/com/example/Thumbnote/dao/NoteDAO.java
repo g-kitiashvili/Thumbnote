@@ -42,13 +42,12 @@ public class   NoteDAO {
 
     public boolean AddNote(Note note) {
         try (Connection conn = dataSource.getConnection()) {
-            PreparedStatement stmt = conn.prepareStatement("INSERT INTO notes (user_id, upload_date, last_update, last_access_date, note_name, note) VALUES (?, ?, ?, ?, ?, ?)");
+            PreparedStatement stmt = conn.prepareStatement("INSERT INTO notes (user_id, last_access_date, note_name, note) VALUES (?,  ?, ?, ?)");
             stmt.setLong(1, note.getUserId());
-            stmt.setTimestamp(2, (Timestamp) note.getUploadDate());
-            stmt.setTimestamp(3, null);
-            stmt.setTimestamp(4, (Timestamp) note.getLastAccessDate());
-            stmt.setString(5, note.getNoteName());
-            stmt.setString(6, note.getNoteText());
+
+            stmt.setTimestamp(2, (Timestamp) note.getLastAccessDate());
+            stmt.setString(3, note.getNoteName());
+            stmt.setString(4, note.getNoteText());
             int rowsAffected = stmt.executeUpdate();
             stmt.close();
             return rowsAffected > 0;
@@ -68,14 +67,13 @@ public class   NoteDAO {
 
             if (rs.next()) {
                 long userId = rs.getLong("user_id");
-                Date uploadDate = rs.getTimestamp("upload_date");
-                Date lastUpdateDate = rs.getTimestamp("last_update");
-                Date lastAccessDate = rs.getTimestamp("last_access_date");
                 String noteName = rs.getString("note_name");
                 String noteText = rs.getString("note");
-//                List<String> tags = getTagsForNoteId(noteId);
+                Date uploadDate=rs.getDate("upload_date");
 
-                note = new Note(noteId, userId, noteName, noteText);
+                List<String> tags = getTagsForNoteId(noteId);
+
+                note = new Note(noteId, userId,uploadDate, noteName, noteText,tags);
             }
 
             rs.close();
@@ -87,6 +85,8 @@ public class   NoteDAO {
         return note;
     }
 
+
+
     public List<Note> getAllNotes(long userId) {
         List<Note> notes = new ArrayList<>();
         try (Connection conn = dataSource.getConnection()) {
@@ -96,14 +96,12 @@ public class   NoteDAO {
 
             while (rs.next()) {
                 long id = rs.getLong("note_id");
-                Date uploadDate = rs.getTimestamp("upload_date");
-                Date lastUpdateDate = rs.getTimestamp("last_update");
-                Date lastAccessDate = rs.getTimestamp("last_access");
                 String noteName = rs.getString("note_name");
                 String noteText = rs.getString("note_text");
-//                List<String> tags = getTagsForNoteId(id);
+                Date uploadDate = rs.getDate("upload_date");
+                List<String> tags = getTagsForNoteId(id);
 
-                Note note = new Note(id, userId, noteName, noteText);
+                Note note = new Note(id, userId,uploadDate, noteName, noteText,tags);
                 notes.add(note);
             }
 
@@ -118,14 +116,12 @@ public class   NoteDAO {
 
     public boolean updateNote(Note note) {
         try (Connection conn = dataSource.getConnection()) {
-            PreparedStatement stmt = conn.prepareStatement("UPDATE notes SET user_id = ?, upload_date = ?, last_update = ?, last_access_date = ?, note_name = ?, note = ? WHERE note_id = ?");
+            PreparedStatement stmt = conn.prepareStatement("UPDATE notes SET user_id = ?, last_access_date = ?, note_name = ?, note = ? WHERE note_id = ?");
             stmt.setLong(1, note.getUserId());
-            stmt.setTimestamp(2, (Timestamp) note.getUploadDate());
-            stmt.setTimestamp(3, new Timestamp( System.currentTimeMillis()));
-            stmt.setTimestamp(4, (Timestamp) note.getLastAccessDate());
-            stmt.setString(5, note.getNoteName());
-            stmt.setString(6, note.getNoteText());
-            stmt.setLong(7, note.getNoteId());
+            stmt.setTimestamp(2,new Timestamp(System.currentTimeMillis()));
+            stmt.setString(3, note.getNoteName());
+            stmt.setString(4, note.getNoteText());
+            stmt.setLong(5, note.getNoteId());
             int rowsAffected = stmt.executeUpdate();
             stmt.close();
             return rowsAffected>0;
@@ -150,22 +146,82 @@ public class   NoteDAO {
         return false;
     }
 
-//    private List<String> getTagsForNoteId(long noteId) throws SQLException {
-//        List<String> tags = new ArrayList<>();
-//        try (Connection conn = dataSource.getConnection()){
-//            PreparedStatement stmt = conn.prepareStatement("SELECT tag_name FROM tags WHERE note_id = ?");
-//            stmt.setLong(1, noteId);
-//            ResultSet rs = stmt.executeQuery();
-//
-//            while (rs.next()) {
-//                String tagName = rs.getString("tag_name");
-//                tags.add(tagName);
-//            }
-//
-//            rs.close();
-//            stmt.close();
-//        }
-//
-//        return tags;
-//    }
+    public List<String> getTagsForNoteId(long noteId) throws SQLException {
+        List<String> tags = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection()){
+            PreparedStatement stmt = conn.prepareStatement("SELECT tag_name FROM tags WHERE note_id = ?");
+            stmt.setLong(1, noteId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String tagName = rs.getString("tag_name");
+                tags.add(tagName);
+            }
+
+            rs.close();
+            stmt.close();
+        }
+
+        return tags;
+    }
+
+    public Note updateNoteTags(Long noteId, List<String> tags) {
+
+            try (Connection conn = dataSource.getConnection()) {
+                // Update the tags for the note in the tags table
+                PreparedStatement tagStmt = conn.prepareStatement("DELETE FROM tags WHERE note_id = ?");
+                tagStmt.setLong(1, noteId);
+                tagStmt.executeUpdate();
+
+                for (String tag : tags) {
+                    PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO tags (note_id, tag_name) VALUES (?, ?)");
+                    insertStmt.setLong(1, noteId);
+                    insertStmt.setString(2, tag);
+                    insertStmt.executeUpdate();
+                    insertStmt.close();
+                }
+
+                // Retrieve the updated note object from the notes table
+                PreparedStatement noteStmt = conn.prepareStatement("SELECT * FROM notes WHERE note_id = ?");
+                noteStmt.setLong(1, noteId);
+                ResultSet rs = noteStmt.executeQuery();
+
+                if (rs.next()) {
+                    long userId = rs.getLong("user_id");
+                    String noteName = rs.getString("note_name");
+                    String noteText = rs.getString("note");
+                    Date uploadDate = rs.getTimestamp("upload_date");
+
+                    List<String> newTags = getTagsForNoteId(noteId);
+
+                    Note note = new Note(noteId, userId, uploadDate, noteName, noteText, newTags);
+
+                    // Update the note object in the notes table
+                    PreparedStatement updateStmt = conn.prepareStatement("UPDATE notes SET user_id = ?, last_access_date = ?, note_name = ?, note = ? WHERE note_id = ?");
+                    updateStmt.setLong(1, note.getUserId());
+                    updateStmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                    updateStmt.setString(3, note.getNoteName());
+                    updateStmt.setString(4, note.getNoteText());
+                    updateStmt.setLong(5, note.getNoteId());
+                    updateStmt.executeUpdate();
+                    updateStmt.close();
+
+                    rs.close();
+                    noteStmt.close();
+                    tagStmt.close();
+
+                    return note;
+                }
+
+                rs.close();
+                noteStmt.close();
+                tagStmt.close();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
 }

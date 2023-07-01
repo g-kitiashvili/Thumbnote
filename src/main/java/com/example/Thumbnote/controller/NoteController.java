@@ -1,5 +1,6 @@
 package com.example.Thumbnote.controller;
 
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,18 @@ public class NoteController {
         List<Note> notes = noteDao.getAllNotes(userId);
         return ResponseEntity.ok(notes);
     }
+    @PostMapping("/{id}/addtag")
+        public ResponseEntity<?> updateNoteTags(@PathVariable Long id, @RequestBody List<String> tags) {
+            Note updatedNote = noteDao.updateNoteTags(id, tags);
+            return ResponseEntity.ok(updatedNote);
+    }
+
+    @GetMapping("/{id}/tags")
+    public List<String> getNoteTags(@PathVariable Long id) throws SQLException {
+        List<String> tags = noteDao.getTagsForNoteId(id);
+
+        return tags;
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<Note> getNoteById(@RequestHeader("Authorization") String authHeader, @PathVariable Long id) {
@@ -64,7 +77,7 @@ public class NoteController {
         }
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Void> updateNote(@RequestHeader("Authorization") String authHeader, @PathVariable Long id, @RequestBody Note note) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
