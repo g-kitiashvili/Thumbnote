@@ -97,7 +97,7 @@ public class   NoteDAO {
             while (rs.next()) {
                 long id = rs.getLong("note_id");
                 String noteName = rs.getString("note_name");
-                String noteText = rs.getString("note_text");
+                String noteText = rs.getString("note");
                 Date uploadDate = rs.getDate("upload_date");
                 List<String> tags = getTagsForNoteId(id);
 

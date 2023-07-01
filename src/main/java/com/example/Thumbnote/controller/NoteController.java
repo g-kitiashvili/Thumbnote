@@ -35,6 +35,8 @@ public class NoteController {
         String username = jwtUtil.getUsernameFromToken(token);
         long userId = userDAO.getUserID(username);
         List<Note> notes = noteDao.getAllNotes(userId);
+
+
         return ResponseEntity.ok(notes);
     }
     @PostMapping("/{id}/addtag")
