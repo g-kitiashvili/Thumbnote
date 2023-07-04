@@ -2,6 +2,7 @@ package com.example.Thumbnote.config;
 
 import com.example.Thumbnote.dao.AccDAO;
 import com.example.Thumbnote.dao.NoteDAO;
+import com.example.Thumbnote.dao.NotebookDAO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +43,11 @@ public class AppConfiguration {
     @Bean
     public NoteDAO noteDAO(DataSource dataSource) {
         return new NoteDAO(dataSource);
+    }
+
+    @Bean
+    public NotebookDAO notebookDAO(DataSource dataSource) {
+        return new NotebookDAO(dataSource);
     }
 
 

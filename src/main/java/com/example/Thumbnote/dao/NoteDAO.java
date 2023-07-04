@@ -164,6 +164,32 @@ public class   NoteDAO {
 
         return tags;
     }
+    public List<Note> getAllNotebookNotes(long userId, long notebookId){
+        List<Note> notes = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection()) {
+            PreparedStatement stmt = conn.prepareStatement("SELECT * FROM notes WHERE user_id = ? and notebook_id=?");
+            stmt.setLong(1, userId);
+            stmt.setLong(2,notebookId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                long id = rs.getLong("note_id");
+                String noteName = rs.getString("note_name");
+                String noteText = rs.getString("note");
+                Date uploadDate = rs.getDate("upload_date");
+                List<String> tags = getTagsForNoteId(id);
+
+                Note note = new Note(id, userId,uploadDate, noteName, noteText,tags);
+                notes.add(note);
+            }
+
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return notes;
+    }
 
     public Note updateNoteTags(Long noteId, List<String> tags) {
 

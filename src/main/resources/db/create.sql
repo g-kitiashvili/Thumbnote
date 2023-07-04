@@ -15,16 +15,27 @@ CREATE TABLE users (
                        email VARCHAR(255) NOT NULL unique
 );
 
+create table notebooks(
+    notebook_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    notebook_name VARCHAR(255),
+    description tinytext,
+    user_id bigINT,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+
+)
 create table notes (
         note_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT NOT NULL,
+        notebook_id BIGINT,
         upload_date timestamp default current_timestamp,
         last_access_date timestamp,
         note_name varchar(255),
         note mediumtext,
         FOREIGN KEY (user_id) REFERENCES users(user_id),
-        unique(note_name,user_id)
+        unique(note_name,user_id),
 #         unique key(note_id,user_id)
+        FOREIGN KEY (notebook_id) REFERENCES notebooks(notebook_id),
+        unique key(notebook_id,user_id)
 
 );
 
@@ -38,15 +49,4 @@ create table tags(
 
 );
 
-create table notebooks(
-    notebook_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    notebook_name VARCHAR(255),
-    description tinytext,
-    user_id bigINT,
-    note_id bigINT,
-    FOREIGN KEY (note_id) REFERENCES Notes(note_id),
-    FOREIGN KEY (user_id) REFERENCES Users(user_id),
-    unique key(note_id,notebook_id)
-
-)
 
