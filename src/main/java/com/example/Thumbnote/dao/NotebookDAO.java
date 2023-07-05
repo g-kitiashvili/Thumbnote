@@ -128,6 +128,10 @@ public class NotebookDAO {
 
     public boolean deleteNotebook(long id) {
         try (Connection conn = dataSource.getConnection()) {
+            PreparedStatement stmt2 = conn.prepareStatement("update notes set notebook_id=null where notebook_id=?");
+            stmt2.setLong(1,id);
+            stmt2.executeUpdate();
+            stmt2.close();
             PreparedStatement stmt = conn.prepareStatement("DELETE FROM notebooks WHERE notebook_id = ?");
             stmt.setLong(1,id);
             int rowsAffected = stmt.executeUpdate();

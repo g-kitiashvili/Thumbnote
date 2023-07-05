@@ -79,6 +79,9 @@ public class NotebookController {
         String username = jwtUtil.getUsernameFromToken(token);
         long userId = accDao.getUserID(username);
         List<Notebook> notebooks = notebookDao.getAllNotebooks(userId);
+        for(Notebook nb : notebooks){
+            nb.setNotes(noteDao.getAllNotebookNotes(userId,nb.getNotebookId()));
+        }
 
         return ResponseEntity.ok(notebooks);
     }
