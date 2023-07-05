@@ -20,6 +20,22 @@ public class   NoteDAO {
         this.dataSource = dataSource;
     }
 
+    public long getNotebookId(long noteId){
+        try (Connection conn = dataSource.getConnection()) {
+            PreparedStatement stmt = conn.prepareStatement("SELECT notebook_id FROM notes WHERE note_id = ?");
+            stmt.setLong(1, noteId);
+
+            ResultSet rs = stmt.executeQuery();
+           if(rs.next())
+               return rs.getLong(1);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+
+    }
     public boolean doesExist(long userId, String note_name){
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) FROM notes WHERE user_id = ? AND note_name = ?");
@@ -57,6 +73,81 @@ public class   NoteDAO {
         }
         return false;
     }
+    public boolean addNoteToNotebook(Note note, long notebookId) {
+        try (Connection conn = dataSource.getConnection()) {
+            PreparedStatement notebookStmt = conn.prepareStatement("SELECT COUNT(*) FROM notebooks WHERE notebook_id = ? AND user_id = ?");
+            notebookStmt.setLong(1, notebookId);
+            notebookStmt.setLong(2, note.getUserId());
+            ResultSet notebookRs = notebookStmt.executeQuery();
+            notebookRs.next();
+            int notebookCount = notebookRs.getInt(1);
+            notebookRs.close();
+            notebookStmt.close();
+
+            if (notebookCount == 0) {
+                return false;
+            }
+
+            PreparedStatement noteStmt = conn.prepareStatement("SELECT COUNT(*) FROM notes WHERE note_name = ? AND user_id = ? AND notebook_id = ?");
+            noteStmt.setString(1, note.getNoteName());
+            noteStmt.setLong(2, note.getUserId());
+            noteStmt.setLong(3, notebookId);
+            ResultSet noteRs = noteStmt.executeQuery();
+            noteRs.next();
+            int noteCount = noteRs.getInt(1);
+            noteRs.close();
+            noteStmt.close();
+
+            if (noteCount > 0) {
+                return false;
+            }
+
+            PreparedStatement addNoteStmt = conn.prepareStatement("UPDATE notes SET notebook_id = ?, last_access_date = ? WHERE user_id = ? AND note_name = ? AND notebook_id IS NULL");
+            addNoteStmt.setLong(1, notebookId);
+            addNoteStmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            addNoteStmt.setLong(3, note.getUserId());
+            addNoteStmt.setString(4, note.getNoteName());
+            int rowsAffected = addNoteStmt.executeUpdate();
+            addNoteStmt.close();
+
+            return rowsAffected == 1;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+    public boolean deleteNoteFromNotebook(Note note, long notebookId) {
+        try (Connection conn = dataSource.getConnection()) {
+            PreparedStatement notebookStmt = conn.prepareStatement("SELECT COUNT(*) FROM notebooks WHERE notebook_id = ? AND user_id = ?");
+            notebookStmt.setLong(1, notebookId);
+            notebookStmt.setLong(2, note.getUserId());
+            ResultSet notebookRs = notebookStmt.executeQuery();
+            notebookRs.next();
+            int notebookCount = notebookRs.getInt(1);
+            notebookRs.close();
+            notebookStmt.close();
+
+            if (notebookCount == 0) {
+                return false;
+            }
+
+            PreparedStatement deleteNoteStmt = conn.prepareStatement("UPDATE notes SET notebook_id = NULL WHERE user_id = ? AND note_name = ? AND notebook_id = ?");
+            deleteNoteStmt.setLong(1, note.getUserId());
+            deleteNoteStmt.setString(2, note.getNoteName());
+            deleteNoteStmt.setLong(3, notebookId);
+            int rowsAffected = deleteNoteStmt.executeUpdate();
+            deleteNoteStmt.close();
+
+            return rowsAffected == 1;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 
     public Note getById(long noteId) {
         Note note = null;
@@ -70,10 +161,11 @@ public class   NoteDAO {
                 String noteName = rs.getString("note_name");
                 String noteText = rs.getString("note");
                 Date uploadDate=rs.getDate("upload_date");
+                long notebookId=rs.getLong("notebook_id");
 
                 List<String> tags = getTagsForNoteId(noteId);
 
-                note = new Note(noteId, userId,uploadDate, noteName, noteText,tags);
+                note = new Note(noteId, userId,notebookId , uploadDate, noteName, noteText, tags);
             }
 
             rs.close();
@@ -100,8 +192,9 @@ public class   NoteDAO {
                 String noteText = rs.getString("note");
                 Date uploadDate = rs.getDate("upload_date");
                 List<String> tags = getTagsForNoteId(id);
+                long nbId = rs.getLong("notebook_id");
 
-                Note note = new Note(id, userId,uploadDate, noteName, noteText,tags);
+                Note note = new Note(id, userId, nbId, uploadDate, noteName, noteText, tags);
                 notes.add(note);
             }
 
@@ -131,13 +224,17 @@ public class   NoteDAO {
         return false;
     }
 
-    public boolean deleteNote(Note note) {
+    public boolean deleteNote(Note note,long userId) {
         try (Connection conn = dataSource.getConnection()) {
-            PreparedStatement stmt = conn.prepareStatement("DELETE FROM notes WHERE note_id = ?");
+            PreparedStatement stmt2 = conn.prepareStatement("delete from tags where note_id = ? ");
+            stmt2.setLong(1, note.getNoteId());
+            stmt2.executeUpdate();
+            PreparedStatement stmt = conn.prepareStatement("DELETE FROM notes WHERE note_id = ? and user_id = ?");
             stmt.setLong(1, note.getNoteId());
+            stmt.setLong(2,userId);
             int rowsAffected = stmt.executeUpdate();
-
             stmt.close();
+            stmt2.close();
             return rowsAffected>0;
 
         } catch (SQLException e) {
@@ -179,7 +276,7 @@ public class   NoteDAO {
                 Date uploadDate = rs.getDate("upload_date");
                 List<String> tags = getTagsForNoteId(id);
 
-                Note note = new Note(id, userId,uploadDate, noteName, noteText,tags);
+                Note note = new Note(id, userId,notebookId , uploadDate, noteName, noteText, tags);
                 notes.add(note);
             }
 
@@ -217,10 +314,11 @@ public class   NoteDAO {
                     String noteName = rs.getString("note_name");
                     String noteText = rs.getString("note");
                     Date uploadDate = rs.getTimestamp("upload_date");
+                    long nbId = rs.getLong("notebook_id");
 
                     List<String> newTags = getTagsForNoteId(noteId);
 
-                    Note note = new Note(noteId, userId, uploadDate, noteName, noteText, newTags);
+                    Note note = new Note(noteId, userId,nbId , uploadDate, noteName, noteText, newTags);
 
                     // Update the note object in the notes table
                     PreparedStatement updateStmt = conn.prepareStatement("UPDATE notes SET user_id = ?, last_access_date = ?, note_name = ?, note = ? WHERE note_id = ?");

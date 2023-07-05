@@ -12,15 +12,17 @@ public class Note {
     private String noteName;
     private String noteText;
     private List<String> tags;
+    private long notebookId;
 
 
-    public Note(long noteId, long userId,Date uploadDate, String noteName, String noteText, List<String> tags) {
+    public Note(long noteId, long userId,long notebookId,Date uploadDate, String noteName, String noteText, List<String> tags) {
         this.noteId = noteId;
         this.userId = userId;
         this.uploadDate=uploadDate;
         this.lastAccessDate = new Timestamp( System.currentTimeMillis());
         this.noteName = noteName;
         this.noteText = noteText;
+        this.notebookId=notebookId;
         this.tags = tags;
     }
 
@@ -49,7 +51,12 @@ public class Note {
         this.uploadDate = uploadDate;
     }
 
-
+    public void setNotebookId(long nbId){
+        notebookId=nbId;
+    }
+    public long getNotebookId(){
+        return notebookId;
+    }
 
     public Date getLastAccessDate() {
         return lastAccessDate;

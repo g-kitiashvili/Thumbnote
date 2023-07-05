@@ -20,9 +20,11 @@ create table notebooks(
     notebook_name VARCHAR(255),
     description tinytext,
     user_id bigINT,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    unique key(notebook_id,user_id)
 
-)
+
+);
 create table notes (
         note_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT NOT NULL,
@@ -34,17 +36,16 @@ create table notes (
         FOREIGN KEY (user_id) REFERENCES users(user_id),
         unique(note_name,user_id),
 #         unique key(note_id,user_id)
-        FOREIGN KEY (notebook_id) REFERENCES notebooks(notebook_id),
-        unique key(notebook_id,user_id)
+        FOREIGN KEY (notebook_id) REFERENCES notebooks(notebook_id)
 
 );
 
 create table tags(
         tag_id BIGINT auto_increment primary key ,
         note_id BIGINT,
-        tag_name VARCHAR(255) unique,
+        tag_name VARCHAR(255) ,
         FOREIGN KEY (note_id) REFERENCES notes (note_id),
-        unique key(tag_name,note_id)
+        unique key(note_id,tag_name)
 
 
 );

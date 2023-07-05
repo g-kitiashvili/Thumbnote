@@ -72,6 +72,7 @@ public class NoteController {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         long userId = userDAO.getUserID(username);
+        note.setUserId(userId);
         if (noteDao.AddNote(note)) {
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } else {
@@ -80,10 +81,15 @@ public class NoteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateNote(@RequestHeader("Authorization") String authHeader, @PathVariable Long id, @RequestBody Note note) {
+    public ResponseEntity<Void> updateNote(@RequestHeader("Authorization") String authHeader, @PathVariable Long id, @RequestBody Note note) throws SQLException {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         long userId = userDAO.getUserID(username);
+        note.setUserId(userId);
+        note.setNoteId(id);
+        note.setTags(noteDao.getTagsForNoteId(id));
+        note.setLastAccessDate(new Timestamp( System.currentTimeMillis()));
+        note.setNotebookId(noteDao.getNotebookId(id));
         if (noteDao.updateNote(note)) {
             return ResponseEntity.status(HttpStatus.OK).build();
         } else {
@@ -96,7 +102,7 @@ public class NoteController {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         long userId = userDAO.getUserID(username);
-        if (noteDao.deleteNote(noteDao.getById(id))) {
+        if (noteDao.deleteNote(noteDao.getById(id),userId)) {
             return ResponseEntity.status(HttpStatus.OK).build();
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
