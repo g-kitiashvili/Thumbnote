@@ -4,6 +4,7 @@ import com.example.Thumbnote.objects.Note;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.sql.Connection;
@@ -348,4 +349,47 @@ public class   NoteDAO {
             return null;
         }
 
+    public List<Note> searchNotes(String name, List<String> tags, String sortBy, String sortOrder, long userId) {
+        List<Note> notes = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection()) {
+            String sql = "SELECT * FROM notes WHERE user_id = ? ";
+            if (name != null) {
+                sql += "AND note_name LIKE ? ";
+            }
+            if (tags != null && !tags.isEmpty()) {
+                sql += "AND note_id IN (SELECT note_id FROM tags WHERE tag_name IN (?)) ";
+            }
+            sql += "ORDER BY " + sortBy + " " + sortOrder;
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setLong(1, userId);
+            if (name != null) {
+                stmt.setString(2, "%" + name + "%");
+            }
+            if (tags != null && !tags.isEmpty()) {
+                String tagQuery = String.join(",", Collections.nCopies(tags.size(), "?"));
+                stmt.setString(name != null ? 3 : 2, tagQuery);
+                for (int i = 0; i < tags.size(); i++) {
+                    stmt.setString(name != null ? i + 3 : i + 2, tags.get(i));
+                }
+            }
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                long id = rs.getLong("note_id");
+                String noteName = rs.getString("note_name");
+                String noteText = rs.getString("note");
+                Date uploadDate = rs.getTimestamp("upload_date");
+                long nbId = rs.getLong("notebook_id");
+                List<String> noteTags = getTagsForNoteId(id);
+
+                Note note = new Note(id, userId, nbId, uploadDate, noteName, noteText, noteTags);
+                notes.add(note);
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return notes;
+    }
 }
