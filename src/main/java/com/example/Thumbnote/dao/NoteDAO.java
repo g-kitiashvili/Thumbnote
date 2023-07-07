@@ -321,15 +321,15 @@ public class   NoteDAO {
 
                     Note note = new Note(noteId, userId,nbId , uploadDate, noteName, noteText, newTags);
 
-                    // Update the note object in the notes table
-                    PreparedStatement updateStmt = conn.prepareStatement("UPDATE notes SET user_id = ?, last_access_date = ?, note_name = ?, note = ? WHERE note_id = ?");
-                    updateStmt.setLong(1, note.getUserId());
-                    updateStmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-                    updateStmt.setString(3, note.getNoteName());
-                    updateStmt.setString(4, note.getNoteText());
-                    updateStmt.setLong(5, note.getNoteId());
-                    updateStmt.executeUpdate();
-                    updateStmt.close();
+//                    // Update the note object in the notes table
+//                    PreparedStatement updateStmt = conn.prepareStatement("UPDATE notes SET user_id = ?, last_access_date = ?, note_name = ?, note = ? WHERE note_id = ?");
+//                    updateStmt.setLong(1, note.getUserId());
+//                    updateStmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+//                    updateStmt.setString(3, note.getNoteName());
+//                    updateStmt.setString(4, note.getNoteText());
+//                    updateStmt.setLong(5, note.getNoteId());
+//                    updateStmt.executeUpdate();
+//                    updateStmt.close();
 
                     rs.close();
                     noteStmt.close();
@@ -357,22 +357,26 @@ public class   NoteDAO {
                 sql += "AND note_name LIKE ? ";
             }
             if (tags != null && !tags.isEmpty()) {
-                sql += "AND note_id IN (SELECT note_id FROM tags WHERE tag_name IN (?)) ";
+                String tagQuery = String.join(",", Collections.nCopies(tags.size(), "?"));
+                sql += "AND note_id IN (SELECT note_id FROM tags WHERE tag_name IN (" + tagQuery + ")) ";
             }
             sql += "ORDER BY " + sortBy + " " + sortOrder;
 
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setLong(1, userId);
+            int paramIndex = 2;
             if (name != null) {
-                stmt.setString(2, "%" + name + "%");
+                stmt.setString(paramIndex, "%" + name + "%");
+                paramIndex++;
             }
             if (tags != null && !tags.isEmpty()) {
-                String tagQuery = String.join(",", Collections.nCopies(tags.size(), "?"));
-                stmt.setString(name != null ? 3 : 2, tagQuery);
                 for (int i = 0; i < tags.size(); i++) {
-                    stmt.setString(name != null ? i + 3 : i + 2, tags.get(i));
+                    stmt.setString(paramIndex, tags.get(i));
+                    paramIndex++;
                 }
             }
+
+            System.out.println("SQL query: " + stmt.toString());
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 long id = rs.getLong("note_id");
