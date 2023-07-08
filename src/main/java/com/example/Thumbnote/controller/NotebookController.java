@@ -1,10 +1,11 @@
 package com.example.Thumbnote.controller;
 
-import com.example.Thumbnote.dao.AccDAO;
-import com.example.Thumbnote.dao.NoteDAO;
-import com.example.Thumbnote.dao.NotebookDAO;
 import com.example.Thumbnote.objects.Note;
 import com.example.Thumbnote.objects.Notebook;
+import com.example.Thumbnote.service.AccountService;
+import com.example.Thumbnote.service.AccountService;
+import com.example.Thumbnote.service.NoteService;
+import com.example.Thumbnote.service.NotebookService;
 import com.example.Thumbnote.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,39 +18,42 @@ import java.util.List;
 @RequestMapping("api/notebooks")
 public class NotebookController {
 
-    private final NotebookDAO notebookDao;
-    private final NoteDAO noteDao;
-    private final AccDAO accDao;
+    private final NotebookService notebookService;
+    private final NoteService noteService;
+    private final AccountService accService;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public NotebookController(NotebookDAO notebookDao, NoteDAO noteDao, AccDAO accDao, JwtUtil jwtUtil) {
-        this.notebookDao = notebookDao;
-        this.noteDao = noteDao;
-        this.accDao = accDao;
+    public NotebookController(NotebookService notebookService, NoteService noteService, AccountService accService, JwtUtil jwtUtil) {
+        this.notebookService = notebookService;
+        this.noteService = noteService;
+        this.accService = accService;
         this.jwtUtil = jwtUtil;
     }
+
     @GetMapping("/{notebookId}/notelist")
     public ResponseEntity<List<Note>> getAllNotesInNotebook(@RequestHeader("Authorization") String authHeader, @PathVariable long notebookId) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
-        long userId = accDao.getUserID(username);
+        long userId = accService.getUserID(username);
 
-        Notebook notebook = notebookDao.getById(notebookId);
+        Notebook notebook = notebookService.getById(notebookId);
         if (notebook == null || notebook.getUserId() != userId) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        List<Note> notes = noteDao.getAllNotebookNotes(userId,notebookId);
+        List<Note> notes = noteService.getAllNotebookNotes(userId,notebookId);
         return ResponseEntity.ok(notes);
-    }    @PostMapping("/{notebookId}/notelist/add")
+    }
+
+    @PostMapping("/{notebookId}/notelist/add")
     public ResponseEntity<Void> addNoteToNotebook(@RequestHeader("Authorization") String authHeader, @PathVariable long notebookId, @RequestParam long noteId) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
-        long userId = accDao.getUserID(username);
-        Note note = noteDao.getById(noteId);
-
-        if (note.getUserId() == userId && noteDao.addNoteToNotebook(note, notebookId)) {
+        long userId = accService.getUserID(username);
+        Note note = noteService.getNoteById(username,noteId);
+        if(note==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        if (note.getUserId() == userId && noteService.addNoteToNotebook(note, notebookId)) {
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -60,27 +64,28 @@ public class NotebookController {
     public ResponseEntity<Void> removeNoteFromNotebook(@RequestHeader("Authorization") String authHeader, @PathVariable long notebookId, @PathVariable long noteId) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
-        long userId = accDao.getUserID(username);
+        long userId = accService.getUserID(username);
 
-        Note note = noteDao.getById(noteId);
+        Note note = noteService.getNoteById(username,noteId);
         if (note == null || note.getUserId() != userId) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        if (noteDao.deleteNoteFromNotebook(note, notebookId)) {
+        if (noteService.deleteNoteFromNotebook(note, notebookId)) {
             return ResponseEntity.status(HttpStatus.OK).build();
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
+
     @GetMapping("/all")
     public ResponseEntity<List<Notebook>> getAllNotebooks(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
-        long userId = accDao.getUserID(username);
-        List<Notebook> notebooks = notebookDao.getAllNotebooks(userId);
-        for(Notebook nb : notebooks){
-            nb.setNotes(noteDao.getAllNotebookNotes(userId,nb.getNotebookId()));
+        long userId = accService.getUserID(username);
+        List<Notebook> notebooks = notebookService.getAllNotebooks(userId);
+        for (Notebook nb : notebooks) {
+            nb.setNotes(noteService.getAllNotebookNotes(userId, nb.getNotebookId()));
         }
 
         return ResponseEntity.ok(notebooks);
@@ -90,9 +95,9 @@ public class NotebookController {
     public ResponseEntity<Notebook> getNotebookById(@RequestHeader("Authorization") String authHeader, @PathVariable Long id) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
-        long userId = accDao.getUserID(username);
-        Notebook notebook = notebookDao.getById(id);
-        List<Note> notes = noteDao.getAllNotes(id);
+        long userId = accService.getUserID(username);
+        Notebook notebook = notebookService.getById(id);
+        List<Note> notes = noteService.getAllNotes(username);
 
         if (notebook != null && notebook.getUserId() == userId) {
             notebook.setNotes(notes);
@@ -106,10 +111,10 @@ public class NotebookController {
     public ResponseEntity<Void> createNotebook(@RequestHeader("Authorization") String authHeader, @RequestBody Notebook notebook) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
-        long userId = accDao.getUserID(username);
+        long userId = accService.getUserID(username);
         notebook.setUserId(userId);
 
-        if (!notebookDao.doesExist(userId, notebook.getNotebookName()) && notebookDao.addNotebook(notebook)) {
+        if (!notebookService.doesExist(userId, notebook.getNotebookName()) && notebookService.addNotebook(notebook)) {
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -120,11 +125,11 @@ public class NotebookController {
     public ResponseEntity<Void> updateNotebook(@RequestHeader("Authorization") String authHeader, @PathVariable Long id, @RequestBody Notebook notebook) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
-        long userId = accDao.getUserID(username);
+        long userId = accService.getUserID(username);
         notebook.setNotebookId(id);
         notebook.setUserId(userId);
 
-        if (notebook.getUserId() == userId && notebookDao.updateNotebook(notebook)) {
+        if (notebook.getUserId() == userId && notebookService.updateNotebook(notebook)) {
             return ResponseEntity.status(HttpStatus.OK).build();
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -135,9 +140,9 @@ public class NotebookController {
     public ResponseEntity<Void> deleteNotebookById(@RequestHeader("Authorization") String authHeader, @PathVariable Long id) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
-        long userId = accDao.getUserID(username);
+        long userId = accService.getUserID(username);
 
-        if (notebookDao.getById(id) != null && notebookDao.getById(id).getUserId() == userId && notebookDao.deleteNotebook(id)) {
+        if (notebookService.getById(id) != null && notebookService.getById(id).getUserId() == userId && notebookService.deleteNotebook(id)) {
             return ResponseEntity.status(HttpStatus.OK).build();
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

@@ -1,17 +1,12 @@
 package com.example.Thumbnote.controller;
 
-
-
-import com.example.Thumbnote.dao.AccDAO;
-import com.example.Thumbnote.objects.Acc;
+import com.example.Thumbnote.service.AccountService;
+import com.example.Thumbnote.service.AuthService;
 import com.example.Thumbnote.utils.Validator;
-import com.example.Thumbnote.utils.JwtUtil;
-import com.example.Thumbnote.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,23 +15,24 @@ import java.util.Map;
 @RestController
 @RequestMapping("api")
 public class AuthController {
-    private final AccDAO accDAO;
+
+    private final AccountService accountService;
+    private final AuthService authService;
     private final Validator validator;
-    private final JwtUtil jwtUtil;
 
     @Autowired
-    public AuthController(AccDAO accDAO, Validator validator, JwtUtil jwtUtil) {
-        this.accDAO = accDAO;
+    public AuthController(AccountService accountService, AuthService authService, Validator validator) {
+        this.accountService = accountService;
+        this.authService = authService;
         this.validator = validator;
-        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestParam("username") String username,
-                                          @RequestParam("password") String password
-    ,@RequestParam("email") String email) {
+                                          @RequestParam("password") String password,
+                                          @RequestParam("email") String email) {
         Map<String, Object> response = new HashMap<>();
-        List<String> errors = validator.checkRegisterErrors(username, password,email);
+        List<String> errors = validator.checkRegisterErrors(username, password, email);
 
         if (!errors.isEmpty()) {
             response.put("successful", false);
@@ -46,8 +42,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        String hash = SecurityUtils.hashPassword(password);
-        boolean success = accDAO.addAccount(username, hash, email);
+        boolean success = accountService.addAccount(username, password, email);
         response.put("successful", success);
 
         if (!success) {
@@ -60,12 +55,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticate(@RequestParam("username") String username,
                                           @RequestParam("password") String password) {
-        if (validator.validLogin(username, password)) {
-            String jwt = jwtUtil.generateToken(username);
+        if(validator.validLogin(username,password)){
+            String jwt = authService.generateToken(username, password);
             Map<String, String> response = new HashMap<>();
             response.put("token", jwt);
             return ResponseEntity.ok(response);
-        } else {
+        } else  {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }

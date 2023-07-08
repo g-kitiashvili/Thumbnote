@@ -1,66 +1,60 @@
 package com.example.Thumbnote.controller;
 
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Map;
-
-import com.example.Thumbnote.dao.AccDAO;
-import com.example.Thumbnote.dao.NoteDAO;
-import com.example.Thumbnote.objects.Acc;
 import com.example.Thumbnote.objects.Note;
-import com.example.Thumbnote.utils.JwtUtil;
+import com.example.Thumbnote.service.AuthService;
+import com.example.Thumbnote.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
+import java.util.List;
+
 @RestController
 @RequestMapping("api/notes")
 public class NoteController {
-    private final NoteDAO noteDao;
-    private final AccDAO userDAO;
-    private final JwtUtil jwtUtil;
+
+    private final NoteService noteService;
+    private final AuthService authService;
 
     @Autowired
-    public NoteController(NoteDAO noteDAO, AccDAO userDAO, JwtUtil jwtUtil) {
-        this.noteDao = noteDAO;
-        this.userDAO = userDAO;
-        this.jwtUtil = jwtUtil;
+    public NoteController(NoteService noteService, AuthService authService) {
+        this.noteService = noteService;
+        this.authService = authService;
     }
 
     @GetMapping("/allnotes")
     public ResponseEntity<List<Note>> getAllNotes(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        long userId = userDAO.getUserID(username);
-        List<Note> notes = noteDao.getAllNotes(userId);
-
-
+        String username = authService.getUsernameFromToken(token);
+        List<Note> notes = noteService.getAllNotes(username);
         return ResponseEntity.ok(notes);
     }
+
     @PostMapping("/{id}/addtag")
-        public ResponseEntity<?> updateNoteTags(@PathVariable Long id, @RequestBody List<String> tags) {
-            Note updatedNote = noteDao.updateNoteTags(id, tags);
-            return ResponseEntity.ok(updatedNote);
+    public ResponseEntity<?> updateNoteTags(@RequestHeader("Authorization") String authHeader,@PathVariable Long id, @RequestBody List<String> tags) {
+        String token = authHeader.replace("Bearer ", "");
+        String username = authService.getUsernameFromToken(token);
+        Note updatedNote = noteService.updateNoteTags(id, username,tags);
+        return ResponseEntity.ok(updatedNote);
     }
 
     @GetMapping("/{id}/tags")
-    public List<String> getNoteTags(@PathVariable Long id) throws SQLException {
-        List<String> tags = noteDao.getTagsForNoteId(id);
+    public List<String> getNoteTags(@RequestHeader("Authorization") String authHeader,@PathVariable Long id) throws SQLException {
+        String token = authHeader.replace("Bearer ", "");
+        String username = authService.getUsernameFromToken(token);
 
-        return tags;
+        return noteService.getNoteTags(username,id);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Note> getNoteById(@RequestHeader("Authorization") String authHeader, @PathVariable Long id) {
         String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        long userId = userDAO.getUserID(username);
-        Note note = noteDao.getById(id);
+        String username = authService.getUsernameFromToken(token);
+        Note note = noteService.getNoteById(username, id);
 
         if (note != null) {
-            note.setLastAccessDate(new Timestamp( System.currentTimeMillis()));
             return ResponseEntity.ok(note);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -70,10 +64,10 @@ public class NoteController {
     @PostMapping("/addnote")
     public ResponseEntity<Void> createNote(@RequestHeader("Authorization") String authHeader, @RequestBody Note note) {
         String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        long userId = userDAO.getUserID(username);
-        note.setUserId(userId);
-        if (noteDao.AddNote(note)) {
+        String username = authService.getUsernameFromToken(token);
+        boolean success = noteService.createNote(username, note);
+
+        if (success) {
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -83,14 +77,10 @@ public class NoteController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateNote(@RequestHeader("Authorization") String authHeader, @PathVariable Long id, @RequestBody Note note) throws SQLException {
         String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        long userId = userDAO.getUserID(username);
-        note.setUserId(userId);
-        note.setNoteId(id);
-        note.setTags(noteDao.getTagsForNoteId(id));
-        note.setLastAccessDate(new Timestamp( System.currentTimeMillis()));
-        note.setNotebookId(noteDao.getNotebookId(id));
-        if (noteDao.updateNote(note)) {
+        String username = authService.getUsernameFromToken(token);
+        boolean success = noteService.updateNote(username, id, note);
+
+        if (success) {
             return ResponseEntity.status(HttpStatus.OK).build();
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -100,9 +90,10 @@ public class NoteController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNoteById(@RequestHeader("Authorization") String authHeader, @PathVariable Long id) {
         String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        long userId = userDAO.getUserID(username);
-        if (noteDao.deleteNote(noteDao.getById(id),userId)) {
+        String username = authService.getUsernameFromToken(token);
+        boolean success = noteService.deleteNoteById(username, id);
+
+        if (success) {
             return ResponseEntity.status(HttpStatus.OK).build();
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

@@ -42,10 +42,12 @@ create table notes (
 
 create table tags(
         tag_id BIGINT auto_increment primary key ,
-        note_id BIGINT,
+        note_id BIGINT not null ,
         tag_name VARCHAR(255) ,
+        user_id bigint not null,
         FOREIGN KEY (note_id) REFERENCES notes (note_id),
-        unique key(note_id,tag_name)
+        unique key(note_id,tag_name),
+        foreign key (user_id) references users(user_id)
 
 
 );
