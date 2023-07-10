@@ -3,6 +3,8 @@ package com.example.Thumbnote.controller;
 import com.example.Thumbnote.service.AccountService;
 import com.example.Thumbnote.service.AuthService;
 import com.example.Thumbnote.utils.Validator;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,5 +65,13 @@ public class AuthController {
         } else  {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        return ResponseEntity.ok().build();
     }
 }
