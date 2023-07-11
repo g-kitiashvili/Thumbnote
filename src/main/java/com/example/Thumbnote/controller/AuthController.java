@@ -33,45 +33,17 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@RequestParam("username") String username,
                                           @RequestParam("password") String password,
                                           @RequestParam("email") String email) {
-        Map<String, Object> response = new HashMap<>();
-        List<String> errors = validator.checkRegisterErrors(username, password, email);
-
-        if (!errors.isEmpty()) {
-            response.put("successful", false);
-            response.put("usernameErrorClass", validator.getRegisterErrorClass("username", errors));
-            response.put("passwordErrorClass", validator.getRegisterErrorClass("password", errors));
-            response.put("emailErrorClass", validator.getRegisterErrorClass("email", errors));
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        boolean success = accountService.addAccount(username, password, email);
-        response.put("successful", success);
-
-        if (!success) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-
-        return ResponseEntity.ok(response);
+        return accountService.addAccount(username, password, email);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticate(@RequestParam("username") String username,
                                           @RequestParam("password") String password) {
-        if(validator.validLogin(username,password)){
-            String jwt = authService.generateToken(username, password);
-            Map<String, String> response = new HashMap<>();
-            response.put("token", jwt);
-            return ResponseEntity.ok(response);
-        } else  {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        return authService.authenticate(username, password);
     }
+
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> start(@RequestHeader("Authorization") String authHeader) {
+        return authService.logout(authHeader);
     }
 }

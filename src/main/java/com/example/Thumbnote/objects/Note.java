@@ -3,6 +3,7 @@ package com.example.Thumbnote.objects;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class Note {
     private long noteId;
@@ -26,7 +27,24 @@ public class Note {
         this.tags = tags;
     }
 
-
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Note note = (Note) obj;
+        return noteId == note.noteId &&
+                userId == note.userId &&
+                notebookId == note.notebookId &&
+                Objects.equals(uploadDate, note.uploadDate) &&
+                Objects.equals(lastAccessDate, note.lastAccessDate) &&
+                Objects.equals(noteName, note.noteName) &&
+                Objects.equals(noteText, note.noteText) &&
+                Objects.equals(tags, note.tags);
+    }
     public long getNoteId() {
         return noteId;
     }

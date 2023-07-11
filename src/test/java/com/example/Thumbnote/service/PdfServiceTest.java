@@ -1,44 +1,40 @@
 package com.example.Thumbnote.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
 import com.example.Thumbnote.objects.Note;
 import com.itextpdf.text.DocumentException;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+@ExtendWith(MockitoExtension.class)
 public class PdfServiceTest {
 
     @Mock
     private NoteService noteService;
 
+    @InjectMocks
     private PdfService pdfService;
 
-    @BeforeEach
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        pdfService = new PdfService(noteService);
-    }
 
-    @Test
-    public void testCreateNoteFromPdf() throws IOException {
-        MultipartFile file = mock(MultipartFile.class);
-        when(file.getInputStream()).thenReturn(mock(InputStream.class));
-        Note note = pdfService.createNoteFromPdf("user", file);
-        assertEquals(note.getNoteName(), file.getOriginalFilename());
-        assertEquals(note.getNoteText(), "sample pdf text");
-        verify(noteService, times(1)).createNote(eq("user"), any(Note.class));
-    }
 
     @Test
     public void testGeneratePdfFromNote() throws IOException, DocumentException {

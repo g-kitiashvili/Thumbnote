@@ -3,10 +3,13 @@ package com.example.Thumbnote.utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
 @Component
@@ -17,6 +20,13 @@ public class JwtUtil {
 
     @Value("${jwt.expiration}")
     private long expiration;
+
+    private final Set<String> invalidatedTokens;
+
+    @Autowired
+    public JwtUtil(Set<String> invalidatedTokens) {
+        this.invalidatedTokens = invalidatedTokens;
+    }
 
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
@@ -50,6 +60,10 @@ public class JwtUtil {
 
     public Boolean validateToken(String token, String username) {
         final String tokenUsername = getUsernameFromToken(token);
-        return (tokenUsername.equals(username) && !isTokenExpired(token));
+        return (tokenUsername.equals(username) && !isTokenExpired(token) && !invalidatedTokens.contains(token));
+    }
+
+    public void invalidateToken(String token) {
+        invalidatedTokens.add(token);
     }
 }

@@ -55,7 +55,7 @@ public class Validator {
         return errors;
     }
 
-    public String getRegisterErrorClass(String fieldName, List<String> errors) {
+    public static String getRegisterErrorClass(String fieldName, List<String> errors) {
         if (Objects.equals(fieldName, "username")) {
             return errors.contains(USERNAME_ERROR_MESSAGE) ? USERNAME_ERROR_MESSAGE : null;
         } else if (Objects.equals(fieldName, "password")) {

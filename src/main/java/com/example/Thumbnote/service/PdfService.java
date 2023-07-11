@@ -29,22 +29,34 @@ public class PdfService {
         this.noteService = noteService;
     }
 
-    public Note createNoteFromPdf(String username, MultipartFile file) {
-        Note note = null;
-
-        try {
-            // Extract the text content from the PDF file
-            PDDocument document = PDDocument.load(file.getInputStream());
-            PDFTextStripper stripper = new PDFTextStripper();
-            String content = stripper.getText(document);
-            document.close();
-            // Create a new note with the extracted content
-            note = new Note(0, 0,0, new Date(),  file.getOriginalFilename(), content, null);
-            noteService.createNote(username,note);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public Note createNoteFromPdf(String username, MultipartFile pdfFile) {
+        if (pdfFile == null || pdfFile.getOriginalFilename() == null) {
+            // Return null if the pdfFile parameter is null or the original filename is null
+            return null;
+        }        if(!pdfFile.getOriginalFilename().toLowerCase().endsWith(".pdf")) {
+            return null;
         }
-        return note;
+        try (PDDocument document = PDDocument.load(pdfFile.getInputStream())) {
+            // Parse the PDF document and extract the text content
+            PDFTextStripper stripper = new PDFTextStripper();
+            String pdfText = stripper.getText(document);
+
+            // Create a new Note object with the extracted text content and other data
+            Note note = new Note(0,0,0,new Date(),pdfFile.getOriginalFilename(),pdfText,null);
+
+
+            // Save the Note object to the database
+            boolean success = noteService.createNote(username, note);
+            if (success) {
+                return note;
+            } else {
+                return null;
+            }
+        } catch (IOException e) {
+            // Handle the IOException and return null
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public byte[] generatePdfFromNote(Note note) throws IOException, DocumentException {
