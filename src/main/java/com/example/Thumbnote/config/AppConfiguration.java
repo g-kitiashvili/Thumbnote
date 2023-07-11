@@ -3,9 +3,10 @@ package com.example.Thumbnote.config;
 import com.example.Thumbnote.dao.AccDAO;
 import com.example.Thumbnote.dao.NoteDAO;
 import com.example.Thumbnote.dao.NotebookDAO;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
@@ -13,25 +14,16 @@ import javax.sql.DataSource;
 @Configuration
 public class AppConfiguration {
 
-    @Value("${spring.datasource.url}")
-    private String dbUrl;
-
-    @Value("${spring.datasource.username}")
-    private String dbUsername;
-
-    @Value("${spring.datasource.password}")
-    private String dbPassword;
-
-    @Value("${spring.datasource.driver-class-name}")
-    private String driverClassName;
+    @Autowired
+    private Environment env;
 
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(driverClassName);
-        dataSource.setUrl(dbUrl);
-        dataSource.setUsername(dbUsername);
-        dataSource.setPassword(dbPassword);
+        dataSource.setDriverClassName(env.getProperty("spring.datasource.driver-class-name"));
+        dataSource.setUrl(env.getProperty("spring.datasource.url"));
+        dataSource.setUsername(env.getProperty("spring.datasource.username"));
+        dataSource.setPassword(env.getProperty("spring.datasource.password"));
         return dataSource;
     }
 
@@ -49,6 +41,5 @@ public class AppConfiguration {
     public NotebookDAO notebookDAO(DataSource dataSource) {
         return new NotebookDAO(dataSource);
     }
-
 
 }

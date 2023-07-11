@@ -38,6 +38,16 @@ public class NoteService {
         return noteDAO.getTagsForNoteId(userId,id);
     }
 
+    public boolean attachPicture(String username, Long id, String picturePath) {
+        long userId = accDAO.getUserID(username);
+        Note note = noteDAO.getById(userId, id);
+        if (note == null) {
+            return false;
+        }
+        note.setPicturePath(picturePath);
+        return noteDAO.attachPictureToNote(note,picturePath);
+    }
+
     public Note getNoteById(String username, Long id) {
         long userId = accDAO.getUserID(username);
         Note note = noteDAO.getById(userId,id);

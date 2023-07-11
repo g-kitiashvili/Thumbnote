@@ -14,12 +14,15 @@ public class Note {
     private String noteText;
     private List<String> tags;
     private long notebookId;
+    private String picturePath;
 
 
-    public Note(long noteId, long userId,long notebookId,Date uploadDate, String noteName, String noteText, List<String> tags) {
+
+    public Note(long noteId, long userId, long notebookId, Date uploadDate, String noteName, String noteText, List<String> tags, String picturePath) {
         this.noteId = noteId;
         this.userId = userId;
         this.uploadDate=uploadDate;
+        this.picturePath = picturePath;
         this.lastAccessDate = new Timestamp( System.currentTimeMillis());
         this.noteName = noteName;
         this.noteText = noteText;
@@ -109,4 +112,11 @@ public class Note {
     }
 
 
+    public String getPicturePath() {
+        return picturePath;
+    }
+
+    public void setPicturePath(String picturePath) {
+        this.picturePath = picturePath;
+    }
 }

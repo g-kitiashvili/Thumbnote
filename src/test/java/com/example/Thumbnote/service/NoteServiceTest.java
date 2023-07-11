@@ -3,16 +3,12 @@ package com.example.Thumbnote.service;
 import com.example.Thumbnote.dao.AccDAO;
 import com.example.Thumbnote.dao.NoteDAO;
 import com.example.Thumbnote.objects.Note;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -30,12 +26,55 @@ public class NoteServiceTest {
         mockAccDAO = mock(AccDAO.class);
         noteService = new NoteService(mockNoteDAO, mockAccDAO);
     }
+    @Test
+    public void testAttachPicture() {
+        // Arrange
+        String username = "testuser";
+        Long id = 123L;
+        String picturePath = "/path/to/picture.png";
+        Note note = new Note(123L, 1L, 2L, new Date(), "Note1", "This is a note", Collections.emptyList(), null);
+        when(mockAccDAO.getUserID(username)).thenReturn(1L);
+        when(mockNoteDAO.getById(1L, id)).thenReturn(note);
+        when(mockNoteDAO.attachPictureToNote(note, picturePath)).thenReturn(true);
+
+        // Act
+        boolean result = noteService.attachPicture(username, id, picturePath);
+
+        // Assert
+        assertTrue(result);
+        assertEquals(picturePath, note.getPicturePath());
+        verify(mockAccDAO).getUserID(username);
+        verify(mockNoteDAO).getById(1L, id);
+        verify(mockNoteDAO).attachPictureToNote(note, picturePath);
+    }
+
+    @Test
+    public void testAttachPictureWithNullNote() {
+        // Arrange
+        String username = "testuser";
+        Long id = 123L;
+        String picturePath = "/path/to/picture.png";
+        when(mockAccDAO.getUserID(username)).thenReturn(1L);
+        when(mockNoteDAO.getById(1L, id)).thenReturn(null);
+
+        // Act
+        boolean result = noteService.attachPicture(username, id, picturePath);
+
+        // Assert
+        assertFalse(result);
+        verify(mockAccDAO).getUserID(username);
+        verify(mockNoteDAO).getById(1L, id);
+        verifyNoMoreInteractions(mockNoteDAO);
+    }
+
+
+
 
     @Test
     public void testAddNoteToNotebook() {
         long userId = 1L;
         long notebookId = 2L;
-        Note noteToAdd = new Note(3L, userId, 0L, new Date(), "Note to Add", "This note will be added to the notebook.", null);
+        Note noteToAdd = new Note(3L, userId, 0L, new Date(), "Note to Add", "This note will be added to the notebook.", null, null);
 
         when(mockAccDAO.getUserID(anyString())).thenReturn(userId);
         when(mockNoteDAO.addNoteToNotebook(noteToAdd, notebookId)).thenReturn(true);
@@ -54,8 +93,8 @@ public class NoteServiceTest {
         String username = "testuser";
         long userId = 1L;
         List<Note> expectedNotes = Arrays.asList(
-                new Note(1L, userId, 1L, new Date(), "Note 1", "This is the first note.", Arrays.asList("tag1", "tag2")),
-                new Note(2L, userId, 1L, new Date(), "Note 2", "This is the second note.", Arrays.asList("tag3", "tag4"))
+                new Note(1L, userId, 1L, new Date(), "Note 1", "This is the first note.", Arrays.asList("tag1", "tag2"), null),
+                new Note(2L, userId, 1L, new Date(), "Note 2", "This is the second note.", Arrays.asList("tag3", "tag4"), null)
         );
 
         when(mockAccDAO.getUserID(username)).thenReturn(userId);
@@ -72,8 +111,8 @@ public class NoteServiceTest {
     void testSearchNotesWithNameAndTags() {
         Date uploadDate = new Date();
         List<Note> notes = new ArrayList<>();
-        Note note1 = new Note(1L, 1L, 1L, uploadDate, "Test Note 1", "This is a test note.", List.of("test", "note"));
-        Note note2 = new Note(2L, 1L, 1L, uploadDate, "Test Note 2", "This is another test note.", List.of("test"));
+        Note note1 = new Note(1L, 1L, 1L, uploadDate, "Test Note 1", "This is a test note.", List.of("test", "note"), null);
+        Note note2 = new Note(2L, 1L, 1L, uploadDate, "Test Note 2", "This is another test note.", List.of("test"), null);
         notes.add(note1);
         notes.add(note2);
 
@@ -88,8 +127,8 @@ public class NoteServiceTest {
     void testSearchNotesWithNoNameAndTags() {
         Date uploadDate = new Date();
         List<Note> notes = new ArrayList<>();
-        Note note1 = new Note(1L, 1L, 1L, uploadDate, "Test Note 1", "This is a test note.", List.of("test", "note"));
-        Note note2 = new Note(2L, 1L, 1L, uploadDate, "Test Note 2", "This is another test note.", List.of("test"));
+        Note note1 = new Note(1L, 1L, 1L, uploadDate, "Test Note 1", "This is a test note.", List.of("test", "note"), null);
+        Note note2 = new Note(2L, 1L, 1L, uploadDate, "Test Note 2", "This is another test note.", List.of("test"), null);
         notes.add(note1);
         notes.add(note2);
 
@@ -128,7 +167,7 @@ public class NoteServiceTest {
         String username = "testuser";
         long userId = 1L;
         Long id = 1L;
-        Note expectedNote = new Note(id, userId, 0L, new Date(), "", "", null);
+        Note expectedNote = new Note(id, userId, 0L, new Date(), "", "", null, null);
 
         when(mockAccDAO.getUserID(username)).thenReturn(userId);
         when(mockNoteDAO.getById(userId, id)).thenReturn(expectedNote);
@@ -154,7 +193,7 @@ public class NoteServiceTest {
         List<String> tags = Arrays.asList("tag1", "tag2");
 
         when(mockAccDAO.getUserID(username)).thenReturn(1L);
-        when(mockNoteDAO.updateNoteTags(noteId, 1L, tags)).thenReturn(new Note(id, userId, 0L, new Date(), "", "", null));
+        when(mockNoteDAO.updateNoteTags(noteId, 1L, tags)).thenReturn(new Note(id, userId, 0L, new Date(), "", "", null, null));
 
         Note actualNote = noteService.updateNoteTags(noteId, username, tags);
 
@@ -187,7 +226,7 @@ public class NoteServiceTest {
 
         long userId = 1L;
         Long id = 1L;
-        Note expectedNote = new Note(id, userId, 0L, new Date(), "", "", null);
+        Note expectedNote = new Note(id, userId, 0L, new Date(), "", "", null, null);
         when(mockAccDAO.getUserID(username)).thenReturn(1L);
         when(mockNoteDAO.getById(1L, noteId)).thenReturn(expectedNote);
 
@@ -221,7 +260,7 @@ public class NoteServiceTest {
 
         long userId = 1L;
         Long id = 1L;
-        Note note = new Note(id, userId, 0L, new Date(), "", "", null);
+        Note note = new Note(id, userId, 0L, new Date(), "", "", null, null);
 
         when(mockAccDAO.getUserID(username)).thenReturn(1L);
         when(mockNoteDAO.AddNote(note)).thenReturn(true);
@@ -241,8 +280,8 @@ public class NoteServiceTest {
 
         long userId = 1L;
         Long id = 1L;
-        Note existingNote = new Note(id, userId, 0L, new Date(), "Note Name", "Note Text", null);
-        Note newNote = new Note(id, userId, 0L, new Date(), "Updated Note Name", "Updated Note Text", null);
+        Note existingNote = new Note(id, userId, 0L, new Date(), "Note Name", "Note Text", null, null);
+        Note newNote = new Note(id, userId, 0L, new Date(), "Updated Note Name", "Updated Note Text", null, null);
 
         when(mockAccDAO.getUserID(username)).thenReturn(userId);
         when(mockNoteDAO.getById(userId, noteId)).thenReturn(existingNote);
@@ -267,7 +306,7 @@ public class NoteServiceTest {
 
         long userId = 1L;
         Long id = 1L;
-        Note note = new Note(id, userId, 0L, new Date(), "", "", null);
+        Note note = new Note(id, userId, 0L, new Date(), "", "", null, null);
         when(mockAccDAO.getUserID(username)).thenReturn(1L);
         when(mockNoteDAO.getById(1L, noteId)).thenReturn(note);
         when(mockNoteDAO.deleteNote(note, 1L)).thenReturn(true);
@@ -283,8 +322,8 @@ public class NoteServiceTest {
         long userId = 1L;
         long notebookId = 1L;
         when(mockNoteDAO.getAllNotebookNotes(userId, notebookId)).thenReturn(Arrays.asList(
-                new Note(1L, userId, notebookId, new Date(), "Note 1", "Note Text 1", null),
-                new Note(2L, userId, notebookId, new Date(), "Note 2", "Note Text 2", null)
+                new Note(1L, userId, notebookId, new Date(), "Note 1", "Note Text 1", null, null),
+                new Note(2L, userId, notebookId, new Date(), "Note 2", "Note Text 2", null, null)
         ));
         List<Note> actualNotes = noteService.getAllNotebookNotes(userId, notebookId);
         verify(mockNoteDAO).getAllNotebookNotes(userId, notebookId);
@@ -298,7 +337,7 @@ public class NoteServiceTest {
 
         long userId = 1L;
         Long id = 1L;
-        Note note = new Note(id, userId, 0L, new Date(), "", "", null);
+        Note note = new Note(id, userId, 0L, new Date(), "", "", null, null);
         when(mockNoteDAO.deleteNoteFromNotebook(note, notebookId)).thenReturn(true);
         boolean success = noteService.deleteNoteFromNotebook(note, notebookId);
         verify(mockNoteDAO).deleteNoteFromNotebook(note, notebookId);

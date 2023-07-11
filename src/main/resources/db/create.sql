@@ -33,6 +33,7 @@ create table notes (
         last_access_date timestamp,
         note_name varchar(255),
         note mediumtext,
+        picturePath varchar(255),
         FOREIGN KEY (user_id) REFERENCES users(user_id),
         unique(note_name,user_id),
 #         unique key(note_id,user_id)

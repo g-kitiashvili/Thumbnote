@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 public class ThumbnoteApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(ThumbnoteApplication.class, args);
 	}
-
 }

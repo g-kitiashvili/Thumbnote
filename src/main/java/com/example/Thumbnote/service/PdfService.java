@@ -42,7 +42,7 @@ public class PdfService {
             String pdfText = stripper.getText(document);
 
             // Create a new Note object with the extracted text content and other data
-            Note note = new Note(0,0,0,new Date(),pdfFile.getOriginalFilename(),pdfText,null);
+            Note note = new Note(0,0,0,new Date(),pdfFile.getOriginalFilename(),pdfText,null, null);
 
 
             // Save the Note object to the database
