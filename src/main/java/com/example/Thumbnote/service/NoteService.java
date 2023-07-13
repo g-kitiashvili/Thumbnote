@@ -2,6 +2,7 @@ package com.example.Thumbnote.service;
 
 import com.example.Thumbnote.dao.AccDAO;
 import com.example.Thumbnote.dao.NoteDAO;
+import com.example.Thumbnote.dao.TagDAO;
 import com.example.Thumbnote.objects.Note;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,16 +28,7 @@ public class NoteService {
         return noteDAO.getAllNotes(userId);
     }
 
-    public Note updateNoteTags(Long id,String  username, List<String> tags) {
-        long userId = accDAO.getUserID(username);
 
-        return noteDAO.updateNoteTags(id, userId,tags);
-    }
-
-    public List<String> getNoteTags(String username,Long id) throws SQLException {
-        long userId = accDAO.getUserID(username);
-        return noteDAO.getTagsForNoteId(userId,id);
-    }
 
     public boolean attachPicture(String username, Long id, String picturePath) {
         long userId = accDAO.getUserID(username);

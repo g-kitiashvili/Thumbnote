@@ -3,6 +3,7 @@ package com.example.Thumbnote.config;
 import com.example.Thumbnote.dao.AccDAO;
 import com.example.Thumbnote.dao.NoteDAO;
 import com.example.Thumbnote.dao.NotebookDAO;
+import com.example.Thumbnote.dao.TagDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,10 @@ public class AppConfiguration {
     @Bean
     public AccDAO userDAO(DataSource dataSource) {
         return new AccDAO(dataSource);
+    }
+    @Bean
+    public TagDAO tagDAO(DataSource datasource){
+        return new TagDAO(datasource);
     }
 
     @Bean

@@ -183,41 +183,7 @@ public class NoteServiceTest {
     }
 
 
-    @Test
-    public void testUpdateNoteTags() {
-        long noteId = 1L;
-        String username = "testuser";
 
-        long userId = 1L;
-        Long id = 1L;
-        List<String> tags = Arrays.asList("tag1", "tag2");
-
-        when(mockAccDAO.getUserID(username)).thenReturn(1L);
-        when(mockNoteDAO.updateNoteTags(noteId, 1L, tags)).thenReturn(new Note(id, userId, 0L, new Date(), "", "", null, null));
-
-        Note actualNote = noteService.updateNoteTags(noteId, username, tags);
-
-        verify(mockAccDAO).getUserID(username);
-        verify(mockNoteDAO).updateNoteTags(noteId, 1L, tags);
-
-        assertNotNull(actualNote);
-    }
-
-    @Test
-    public void testGetNoteTags() throws SQLException {
-        long noteId = 1L;
-        String username = "testuser";
-
-        when(mockAccDAO.getUserID(username)).thenReturn(1L);
-        when(mockNoteDAO.getTagsForNoteId(1L, noteId)).thenReturn(Arrays.asList("tag1", "tag2"));
-
-        List<String> actualTags = noteService.getNoteTags(username, noteId);
-
-        verify(mockAccDAO).getUserID(username);
-        verify(mockNoteDAO).getTagsForNoteId(1L, noteId);
-
-        assertEquals(Arrays.asList("tag1", "tag2"), actualTags);
-    }
 
     @Test
     public void testGetNoteByIdWithNotNullNote() {

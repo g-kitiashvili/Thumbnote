@@ -42,7 +42,6 @@ public class NoteController {
         this.jwtUtil = jwtUtil;
     }
 
-
     @GetMapping("/allnotes")
     public ResponseEntity<List<Note>> getAllNotes(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
@@ -54,33 +53,7 @@ public class NoteController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    @PostMapping("/{id}/addtag")
-    public ResponseEntity<?> updateNoteTags(@RequestHeader("Authorization") String authHeader, @PathVariable Long id, @RequestBody List<String> tags) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = authService.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
 
-            Note updatedNote = noteService.updateNoteTags(id, username, tags);
-            return ResponseEntity.ok(updatedNote);
-        } else
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    @GetMapping("/{id}/tags")
-    public ResponseEntity<List<String>> getNoteTags(@RequestHeader("Authorization") String authHeader, @PathVariable Long id) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = authService.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            try {
-                List<String> tags = noteService.getNoteTags(username, id);
-                return ResponseEntity.ok(tags);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
 
     @PostMapping("/{id}/picture")
     public ResponseEntity<Void> uploadNotePicture(@RequestHeader("Authorization") String authHeader, @PathVariable Long id,
