@@ -31,7 +31,6 @@ public class PdfServiceTest {
     private PdfService pdfService;
 
 
-
     @Test
     public void testGeneratePdfFromNote() throws IOException, DocumentException {
         Note note = new Note(1L, 1L, 1L, new Date(), "title", "text", null, null);

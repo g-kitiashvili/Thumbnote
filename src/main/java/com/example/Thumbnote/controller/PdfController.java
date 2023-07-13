@@ -55,7 +55,6 @@ public class PdfController {
             if (note != null) {
                 byte[] pdfBytes = pdfService.generatePdfFromNote(note);
 
-                // Send the PDF file to the client
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_PDF);
                 headers.setContentDisposition(ContentDisposition.builder("attachment").filename("note.pdf").build());

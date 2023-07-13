@@ -27,34 +27,34 @@ class NotebookServiceTest {
         MockitoAnnotations.openMocks(this);
         service = new NotebookService(notebookDAO);
     }
+
     @Test
-    @DisplayName("Test add notebook with null parameter")
     void testAddNotebookWithNullParameter() {
         boolean result = service.addNotebook(null);
         assertEquals(false, result);
     }
+
     @Test
-    @DisplayName("Test add notebook with empty notebook name")
     void testAddNotebookWithEmptyNotebookName() {
         Notebook notebook = new Notebook(1L, "", "This is a test notebook.", 1L);
         boolean result = service.addNotebook(notebook);
         assertEquals(false, result);
     }
+
     @Test
-    @DisplayName("Test delete notebook with invalid ID")
     void testDeleteNotebookWithInvalidId() {
         long notebookId = -1L;
         boolean result = service.deleteNotebook(notebookId);
         assertEquals(false, result);
     }
+
     @Test
-    @DisplayName("Test update notebook with null parameter")
     void testUpdateNotebookWithNullParameter() {
         boolean result = service.updateNotebook(null);
         assertEquals(false, result);
     }
+
     @Test
-    @DisplayName("Test add notebook")
     void testAddNotebook() {
         Notebook notebook = new Notebook(1L, "Test Notebook", "This is a test notebook.", 1L);
 
@@ -64,15 +64,15 @@ class NotebookServiceTest {
 
         assertEquals(true, result);
     }
+
     @Test
-    @DisplayName("Test get all notebooks with invalid user ID")
     void testGetAllNotebooksWithInvalidUserId() {
         long userId = -1L;
         List<Notebook> result = service.getAllNotebooks(userId);
         assertEquals(0, result.size());
     }
+
     @Test
-    @DisplayName("Test delete notebook")
     void testDeleteNotebook() {
         long notebookId = 1L;
 
@@ -82,23 +82,23 @@ class NotebookServiceTest {
 
         assertEquals(true, result);
     }
+
     @Test
-    @DisplayName("Test does exist with empty notebook name")
     void testDoesExistWithEmptyNotebookName() {
         long userId = 1L;
         String notebookName = "";
         boolean result = service.doesExist(userId, notebookName);
         assertEquals(false, result);
     }
+
     @Test
-    @DisplayName("Test get by ID with invalid ID")
     void testGetByIdWithInvalidId() {
         long notebookId = -1L;
         Notebook result = service.getById(notebookId);
         assertEquals(null, result);
     }
+
     @Test
-    @DisplayName("Test update notebook")
     void testUpdateNotebook() {
         Notebook notebook = new Notebook(1L, "Test Notebook", "This is a test notebook.", 1L);
 
@@ -110,7 +110,6 @@ class NotebookServiceTest {
     }
 
     @Test
-    @DisplayName("Test get all notebooks")
     void testGetAllNotebooks() {
         long userId = 1L;
 
@@ -122,7 +121,6 @@ class NotebookServiceTest {
     }
 
     @Test
-    @DisplayName("Test does exist")
     void testDoesExist() {
         long userId = 1L;
         String notebookName = "Test Notebook";
@@ -135,7 +133,6 @@ class NotebookServiceTest {
     }
 
     @Test
-    @DisplayName("Test get by id")
     void testGetById() {
         long notebookId = 1L;
 

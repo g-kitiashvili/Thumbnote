@@ -24,8 +24,6 @@ public class AuthServiceTest {
     @InjectMocks
     private AuthService authService;
 
-    @Mock
-    private AccDAO userDAO;
 
     @Mock
     private Validator authValidator;
@@ -35,11 +33,8 @@ public class AuthServiceTest {
     private JwtUtil jwtUtil;
 
 
-
-
     @Test
     void testAuthenticate_ValidCredentials() {
-        // Arrange
         String username = "testUser";
         String password = "testPassword";
         String jwtToken = "testJwtToken";
@@ -47,10 +42,9 @@ public class AuthServiceTest {
         when(authValidator.validLogin(username, password)).thenReturn(true);
         when(jwtUtil.generateToken(username)).thenReturn(jwtToken);
 
-        // Act
         ResponseEntity<?> response = authService.authenticate(username, password);
 
-        // Assert
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
         assertNotNull(responseBody);
@@ -59,16 +53,13 @@ public class AuthServiceTest {
 
     @Test
     void testAuthenticate_InvalidCredentials() {
-        // Arrange
         String username = "testUser";
         String password = "testPassword";
 
         when(authValidator.validLogin(username, password)).thenReturn(false);
 
-        // Act
         ResponseEntity<?> response = authService.authenticate(username, password);
 
-        // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
         assertNotNull(responseBody);
@@ -77,7 +68,6 @@ public class AuthServiceTest {
 
     @Test
     void testLogout_ValidToken() {
-        // Arrange
         String authHeader = "Bearer testToken";
         String token = "testToken";
         String username = "testUser";
@@ -85,16 +75,13 @@ public class AuthServiceTest {
         when(jwtUtil.getUsernameFromToken(token)).thenReturn(username);
         when(jwtUtil.validateToken(token, username)).thenReturn(true);
 
-        // Act
         ResponseEntity<?> response = authService.logout(authHeader);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     void testLogout_InvalidToken() {
-        // Arrange
         String authHeader = "Bearer testToken";
         String token = "testToken";
         String username = "testUser";
@@ -102,10 +89,8 @@ public class AuthServiceTest {
         when(jwtUtil.getUsernameFromToken(token)).thenReturn(username);
         when(jwtUtil.validateToken(token, username)).thenReturn(false);
 
-        // Act
         ResponseEntity<?> response = authService.logout(authHeader);
 
-        // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
         assertNotNull(responseBody);

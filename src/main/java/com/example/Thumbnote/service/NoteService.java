@@ -29,7 +29,6 @@ public class NoteService {
     }
 
 
-
     public boolean attachPicture(String username, Long id, String picturePath) {
         long userId = accDAO.getUserID(username);
         Note note = noteDAO.getById(userId, id);
@@ -37,12 +36,12 @@ public class NoteService {
             return false;
         }
         note.setPicturePath(picturePath);
-        return noteDAO.attachPictureToNote(note,picturePath);
+        return noteDAO.attachPictureToNote(note, picturePath);
     }
 
     public Note getNoteById(String username, Long id) {
         long userId = accDAO.getUserID(username);
-        Note note = noteDAO.getById(userId,id);
+        Note note = noteDAO.getById(userId, id);
 
         if (note != null) {
             note.setLastAccessDate(new Timestamp(System.currentTimeMillis()));
@@ -59,8 +58,8 @@ public class NoteService {
 
     public boolean updateNote(String username, Long id, Note newNote) throws SQLException {
         long userId = accDAO.getUserID(username);
-        Note note =noteDAO.getById(userId,id);
-        if(note==null) return false;
+        Note note = noteDAO.getById(userId, id);
+        if (note == null) return false;
         note.setNoteName(newNote.getNoteName());
         note.setNoteText(newNote.getNoteText());
         return noteDAO.updateNote(note);
@@ -72,18 +71,18 @@ public class NoteService {
     }
 
     public List<Note> getAllNotebookNotes(long userId, long notebookId) {
-        return noteDAO.getAllNotebookNotes(userId,notebookId);
+        return noteDAO.getAllNotebookNotes(userId, notebookId);
     }
 
     public boolean deleteNoteFromNotebook(Note note, long notebookId) {
-        return noteDAO.deleteNoteFromNotebook(note,notebookId);
+        return noteDAO.deleteNoteFromNotebook(note, notebookId);
     }
 
     public boolean addNoteToNotebook(Note note, long notebookId) {
-        return noteDAO.addNoteToNotebook(note,notebookId);
+        return noteDAO.addNoteToNotebook(note, notebookId);
     }
 
     public List<Note> searchNotes(String name, List<String> tags, String sortBy, String sortOrder, long userId) {
-        return noteDAO.searchNotes(name,tags,sortBy,sortOrder,userId);
+        return noteDAO.searchNotes(name, tags, sortBy, sortOrder, userId);
     }
 }

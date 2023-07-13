@@ -24,10 +24,10 @@ public class AuthService {
     }
 
 
-
     public String getUsernameFromToken(String token) {
         return jwtUtil.getUsernameFromToken(token);
     }
+
     public ResponseEntity<?> authenticate(String username, String password) {
         if (valid.validLogin(username, password)) {
             String jwt = jwtUtil.generateToken(username);
@@ -50,4 +50,5 @@ public class AuthService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid Token"));
         }
-}}
+    }
+}

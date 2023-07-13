@@ -26,9 +26,9 @@ public class NoteServiceTest {
         mockAccDAO = mock(AccDAO.class);
         noteService = new NoteService(mockNoteDAO, mockAccDAO);
     }
+
     @Test
     public void testAttachPicture() {
-        // Arrange
         String username = "testuser";
         Long id = 123L;
         String picturePath = "/path/to/picture.png";
@@ -37,10 +37,8 @@ public class NoteServiceTest {
         when(mockNoteDAO.getById(1L, id)).thenReturn(note);
         when(mockNoteDAO.attachPictureToNote(note, picturePath)).thenReturn(true);
 
-        // Act
         boolean result = noteService.attachPicture(username, id, picturePath);
 
-        // Assert
         assertTrue(result);
         assertEquals(picturePath, note.getPicturePath());
         verify(mockAccDAO).getUserID(username);
@@ -50,24 +48,19 @@ public class NoteServiceTest {
 
     @Test
     public void testAttachPictureWithNullNote() {
-        // Arrange
         String username = "testuser";
         Long id = 123L;
         String picturePath = "/path/to/picture.png";
         when(mockAccDAO.getUserID(username)).thenReturn(1L);
         when(mockNoteDAO.getById(1L, id)).thenReturn(null);
 
-        // Act
         boolean result = noteService.attachPicture(username, id, picturePath);
 
-        // Assert
         assertFalse(result);
         verify(mockAccDAO).getUserID(username);
         verify(mockNoteDAO).getById(1L, id);
         verifyNoMoreInteractions(mockNoteDAO);
     }
-
-
 
 
     @Test
@@ -79,13 +72,12 @@ public class NoteServiceTest {
         when(mockAccDAO.getUserID(anyString())).thenReturn(userId);
         when(mockNoteDAO.addNoteToNotebook(noteToAdd, notebookId)).thenReturn(true);
 
-        boolean success = noteService.addNoteToNotebook( noteToAdd, notebookId);
+        boolean success = noteService.addNoteToNotebook(noteToAdd, notebookId);
 
         verify(mockNoteDAO).addNoteToNotebook(noteToAdd, notebookId);
 
         assertTrue(success);
     }
-
 
 
     @Test
@@ -107,6 +99,7 @@ public class NoteServiceTest {
 
         assertEquals(expectedNotes, actualNotes);
     }
+
     @Test
     void testSearchNotesWithNameAndTags() {
         Date uploadDate = new Date();
@@ -181,8 +174,6 @@ public class NoteServiceTest {
 
         assertNotNull(actualNote.getLastAccessDate());
     }
-
-
 
 
     @Test

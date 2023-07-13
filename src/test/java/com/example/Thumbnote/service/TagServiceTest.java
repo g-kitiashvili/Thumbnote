@@ -28,9 +28,10 @@ class TagServiceTest {
     public void setUp() {
         mockNoteDAO = mock(NoteDAO.class);
         mockAccDAO = mock(AccDAO.class);
-        mockTagDAO=mock(TagDAO.class);
-        tagService = new TagService(mockNoteDAO, mockAccDAO,mockTagDAO);
+        mockTagDAO = mock(TagDAO.class);
+        tagService = new TagService(mockNoteDAO, mockAccDAO, mockTagDAO);
     }
+
     @Test
     public void testUpdateNoteTags() {
         long noteId = 1L;

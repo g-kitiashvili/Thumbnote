@@ -24,14 +24,14 @@ public class TagService {
         this.tagDAO = tagDAO;
     }
 
-    public Note updateNoteTags(Long id,String  username, List<String> tags) {
+    public Note updateNoteTags(Long id, String username, List<String> tags) {
         long userId = accDAO.getUserID(username);
 
-        return tagDAO.updateNoteTags(id, userId,tags);
+        return tagDAO.updateNoteTags(id, userId, tags);
     }
 
-    public List<String> getNoteTags(String username,Long id) throws SQLException {
+    public List<String> getNoteTags(String username, Long id) throws SQLException {
         long userId = accDAO.getUserID(username);
-        return tagDAO.getTagsForNoteId(userId,id);
+        return tagDAO.getTagsForNoteId(userId, id);
     }
 }
