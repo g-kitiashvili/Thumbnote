@@ -21,7 +21,23 @@ public class   NoteDAO {
         this.dataSource = dataSource;
     }
 
+    public long getNoteId(String noteName,long user_id){
+        try (Connection conn = dataSource.getConnection()) {
+            PreparedStatement stmt = conn.prepareStatement("select note_id from notes where note_name=? and user_id=?");
+            stmt.setString(1, noteName);
+            stmt.setLong(2, user_id);
 
+            ResultSet rs = stmt.executeQuery();
+            stmt.close();
+            if(rs.next()){
+                return rs.getLong(1);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 
     public boolean AddNote(Note note) {
         try (Connection conn = dataSource.getConnection()) {
