@@ -222,7 +222,7 @@ public class NoteServiceTest {
         when(mockAccDAO.getUserID(username)).thenReturn(1L);
         when(mockNoteDAO.AddNote(note)).thenReturn(true);
 
-        boolean success = noteService.createNote(username, note);
+        boolean success = noteService.createNote(note);
 
         verify(mockAccDAO).getUserID(username);
         verify(mockNoteDAO).AddNote(note);

@@ -2,7 +2,6 @@ package com.example.Thumbnote.service;
 
 import com.example.Thumbnote.dao.AccDAO;
 import com.example.Thumbnote.dao.NoteDAO;
-import com.example.Thumbnote.dao.TagDAO;
 import com.example.Thumbnote.objects.Note;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,14 +22,12 @@ public class NoteService {
         this.accDAO = accDAO;
     }
 
-    public List<Note> getAllNotes(String username) {
-        long userId = accDAO.getUserID(username);
+    public List<Note> getAllNotes(long userId) {
         return noteDAO.getAllNotes(userId);
     }
 
 
-    public boolean attachPicture(String username, Long id, String picturePath) {
-        long userId = accDAO.getUserID(username);
+    public boolean attachPicture(long userId, Long id, String picturePath) {
         Note note = noteDAO.getById(userId, id);
         if (note == null) {
             return false;
@@ -39,8 +36,7 @@ public class NoteService {
         return noteDAO.attachPictureToNote(note, picturePath);
     }
 
-    public Note getNoteById(String username, Long id) {
-        long userId = accDAO.getUserID(username);
+    public Note getNoteById(long userId, Long id) {
         Note note = noteDAO.getById(userId, id);
 
         if (note != null) {
@@ -50,14 +46,11 @@ public class NoteService {
         return note;
     }
 
-    public boolean createNote(String username, Note note) {
-        long userId = accDAO.getUserID(username);
-        note.setUserId(userId);
+    public boolean createNote( Note note) {
         return noteDAO.AddNote(note);
     }
 
-    public boolean updateNote(String username, Long id, Note newNote) throws SQLException {
-        long userId = accDAO.getUserID(username);
+    public boolean updateNote(long userId, Long id, Note newNote) throws SQLException {
         Note note = noteDAO.getById(userId, id);
         if (note == null) return false;
         note.setNoteName(newNote.getNoteName());
@@ -65,8 +58,7 @@ public class NoteService {
         return noteDAO.updateNote(note);
     }
 
-    public boolean deleteNoteById(String username, Long id) {
-        long userId = accDAO.getUserID(username);
+    public boolean deleteNoteById(long userId, Long id) {
         return noteDAO.deleteNote(noteDAO.getById(userId, id), userId);
     }
 

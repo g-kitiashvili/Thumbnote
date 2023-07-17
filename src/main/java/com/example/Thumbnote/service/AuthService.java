@@ -44,7 +44,7 @@ public class AuthService {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
-            jwtUtil.invalidateToken(token);
+//            jwtUtil.invalidateToken(token);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

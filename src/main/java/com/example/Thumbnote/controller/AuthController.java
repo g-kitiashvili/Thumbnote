@@ -5,6 +5,7 @@ import com.example.Thumbnote.service.AuthService;
 import com.example.Thumbnote.utils.Validator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("api")
+
 public class AuthController {
 
     private final AccountService accountService;

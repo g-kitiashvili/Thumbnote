@@ -1,19 +1,23 @@
 package com.example.Thumbnote.controller;
 
+import com.example.Thumbnote.annotation.Secure;
 import com.example.Thumbnote.objects.Note;
 import com.example.Thumbnote.objects.Notebook;
 import com.example.Thumbnote.service.*;
 import com.example.Thumbnote.service.AccountService;
 import com.example.Thumbnote.utils.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("api/notebooks")
+@Secure
 public class NotebookController {
 
     private final NotebookService notebookService;
@@ -32,145 +36,106 @@ public class NotebookController {
     }
 
     @GetMapping("/{notebookId}/notelist")
-    public ResponseEntity<List<Note>> getAllNotesInNotebook(@RequestHeader("Authorization") String authHeader, @PathVariable long notebookId) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = authService.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            long userId = accService.getUserID(username);
+    public ResponseEntity<List<Note>> getAllNotesInNotebook(HttpServletRequest request, @PathVariable long notebookId) {
+        long userId = (long) request.getAttribute("userID");
 
-            Notebook notebook = notebookService.getById(notebookId);
-            if (notebook == null || notebook.getUserId() != userId) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
+        Notebook notebook = notebookService.getById(notebookId);
+        if (notebook == null || notebook.getUserId() != userId) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
 
-            List<Note> notes = noteService.getAllNotebookNotes(userId, notebookId);
-            return ResponseEntity.ok(notes);
-        } else
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        List<Note> notes = noteService.getAllNotebookNotes(userId, notebookId);
+        return ResponseEntity.ok(notes);
     }
 
     @PostMapping("/{notebookId}/notelist/add")
-    public ResponseEntity<Void> addNoteToNotebook(@RequestHeader("Authorization") String authHeader, @PathVariable long notebookId, @RequestParam long noteId) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = authService.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            long userId = accService.getUserID(username);
-            Note note = noteService.getNoteById(username, noteId);
-            if (note == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            if (note.getUserId() == userId && noteService.addNoteToNotebook(note, notebookId)) {
-                return ResponseEntity.status(HttpStatus.CREATED).build();
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
-        } else
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<Void> addNoteToNotebook(HttpServletRequest request, @PathVariable long notebookId, @RequestParam long noteId) {
+        long userId = (long) request.getAttribute("userID");
+        Note note = noteService.getNoteById(userId, noteId);
+        if (note == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        if (noteService.addNoteToNotebook(note, notebookId)) {
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @DeleteMapping("/{notebookId}/notelist/{noteId}")
-    public ResponseEntity<Void> removeNoteFromNotebook(@RequestHeader("Authorization") String authHeader, @PathVariable long notebookId, @PathVariable long noteId) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = authService.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            long userId = accService.getUserID(username);
+    public ResponseEntity<Void> removeNoteFromNotebook(HttpServletRequest request, @PathVariable long notebookId, @PathVariable long noteId) {
+        long userId = (long) request.getAttribute("userID");
+        Note note = noteService.getNoteById(userId, noteId);
+        if (note == null || note.getUserId() != userId) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
 
-            Note note = noteService.getNoteById(username, noteId);
-            if (note == null || note.getUserId() != userId) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
-
-            if (noteService.deleteNoteFromNotebook(note, notebookId)) {
-                return ResponseEntity.status(HttpStatus.OK).build();
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
-        } else
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (noteService.deleteNoteFromNotebook(note, notebookId)) {
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Notebook>> getAllNotebooks(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = authService.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            long userId = accService.getUserID(username);
-            List<Notebook> notebooks = notebookService.getAllNotebooks(userId);
-            for (Notebook nb : notebooks) {
-                nb.setNotes(noteService.getAllNotebookNotes(userId, nb.getNotebookId()));
-            }
+    public ResponseEntity<List<Notebook>> getAllNotebooks(HttpServletRequest request) {
+        long userId = (long) request.getAttribute("userID");
+        List<Notebook> notebooks = notebookService.getAllNotebooks(userId);
+        for (Notebook nb : notebooks) {
+            nb.setNotes(noteService.getAllNotebookNotes(userId, nb.getNotebookId()));
+        }
 
-            return ResponseEntity.ok(notebooks);
-        } else
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(notebooks);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Notebook> getNotebookById(@RequestHeader("Authorization") String authHeader, @PathVariable Long id) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = authService.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            long userId = accService.getUserID(username);
-            Notebook notebook = notebookService.getById(id);
-            List<Note> notes = noteService.getAllNotes(username);
+    public ResponseEntity<Notebook> getNotebookById(HttpServletRequest request, @PathVariable Long id) {
+        long userId = (long) request.getAttribute("userID");
+        Notebook notebook = notebookService.getById(id);
+        List<Note> notes = noteService.getAllNotes(userId);
 
-            if (notebook != null && notebook.getUserId() == userId) {
-                notebook.setNotes(notes);
-                return ResponseEntity.ok(notebook);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-        } else
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (notebook != null && notebook.getUserId() == userId) {
+            notebook.setNotes(notes);
+            return ResponseEntity.ok(notebook);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Void> createNotebook(@RequestHeader("Authorization") String authHeader, @RequestBody Notebook notebook) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = authService.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            long userId = accService.getUserID(username);
-            notebook.setUserId(userId);
+    public ResponseEntity<Void> createNotebook(HttpServletRequest request, @RequestBody Notebook notebook) {
+        long userId = (long) request.getAttribute("userID");
+        notebook.setUserId(userId);
 
-            if (!notebookService.doesExist(userId, notebook.getNotebookName()) && notebookService.addNotebook(notebook)) {
-                return ResponseEntity.status(HttpStatus.CREATED).build();
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
-        } else
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (!notebookService.doesExist(userId, notebook.getNotebookName()) && notebookService.addNotebook(notebook)) {
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateNotebook(@RequestHeader("Authorization") String authHeader, @PathVariable Long id, @RequestBody Notebook notebook) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = authService.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            long userId = accService.getUserID(username);
-            notebook.setNotebookId(id);
-            notebook.setUserId(userId);
+    public ResponseEntity<Void> updateNotebook(HttpServletRequest request, @PathVariable Long id, @RequestBody Notebook notebook) {
+        long userId = (long) request.getAttribute("userID");
+        notebook.setNotebookId(id);
+        notebook.setUserId(userId);
 
-            if (notebook.getUserId() == userId && notebookService.updateNotebook(notebook)) {
-                return ResponseEntity.status(HttpStatus.OK).build();
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
-        } else
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (notebookService.updateNotebook(notebook)) {
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNotebookById(@RequestHeader("Authorization") String authHeader, @PathVariable Long id) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = authService.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
+    public ResponseEntity<Void> deleteNotebookById(HttpServletRequest request, @PathVariable Long id) {
+        long userId = (long) request.getAttribute("userID");
 
-            long userId = accService.getUserID(username);
-
-            if (notebookService.getById(id) != null && notebookService.getById(id).getUserId() == userId && notebookService.deleteNotebook(id)) {
-                return ResponseEntity.status(HttpStatus.OK).build();
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
-        } else
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (notebookService.getById(id) != null && notebookService.getById(id).getUserId() == userId && notebookService.deleteNotebook(id)) {
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 }

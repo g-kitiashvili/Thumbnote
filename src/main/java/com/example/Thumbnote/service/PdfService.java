@@ -29,7 +29,7 @@ public class PdfService {
         this.noteService = noteService;
     }
 
-    public Note createNoteFromPdf(String username, MultipartFile pdfFile) {
+    public Note createNoteFromPdf(long userId, MultipartFile pdfFile) {
         if (pdfFile == null || pdfFile.getOriginalFilename() == null) {
             // Return null if the pdfFile parameter is null or the original filename is null
             return null;
@@ -46,7 +46,7 @@ public class PdfService {
 
 
             // Save the Note object to the database
-            boolean success = noteService.createNote(username, note);
+            boolean success = noteService.createNote(note);
             if (success) {
                 return note;
             } else {
@@ -69,8 +69,7 @@ public class PdfService {
         return outputStream.toByteArray();
     }
 
-    public ResponseEntity<byte[]> downloadNoteAsPdf(String username, Long noteId) throws IOException, DocumentException {
-        Note note = noteService.getNoteById(username, noteId);
+    public ResponseEntity<byte[]> downloadNoteAsPdf(Note note) throws IOException, DocumentException {
         if (note != null) {
             byte[] pdfBytes = generatePdfFromNote(note);
             HttpHeaders headers = new HttpHeaders();
