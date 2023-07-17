@@ -3,6 +3,7 @@ package com.example.Thumbnote.controller;
 import com.example.Thumbnote.annotation.Secure;
 import com.example.Thumbnote.service.AccountService;
 import com.example.Thumbnote.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,17 +23,25 @@ public class AuthController {
         this.authService = authService;
         this.accService = accService;
     }
-
+    @GetMapping("/token")
+//    @Secure
+    public String getToken(HttpServletRequest request){
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return token;}
+        else return null;
+    }
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestParam("username") String username,
                                           @RequestParam("password") String password,
                                           @RequestParam("email") String email) {
-        try {
-            return ResponseEntity.ok(accService.addAccount(username, password, email));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("successful", false, "error", e.getMessage()));
-        }
+            boolean success=accService.addAccount(username,password,email);
+            if(success){
+            return ResponseEntity.ok(HttpStatus.OK);}
+            else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
     }
 
     @PostMapping("/login")
