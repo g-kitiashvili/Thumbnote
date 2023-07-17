@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -20,9 +21,11 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    private final Set<String> invalidatedTokens;
 
     @Autowired
-    public JwtUtil() {
+    public JwtUtil(Set<String> invalidatedTokens) {
+        this.invalidatedTokens = invalidatedTokens;
     }
 
     public String getUsernameFromToken(String token) {
@@ -57,7 +60,10 @@ public class JwtUtil {
 
     public Boolean validateToken(String token, String username) {
         final String tokenUsername = getUsernameFromToken(token);
-        return (tokenUsername.equals(username) && !isTokenExpired(token));
+        return (tokenUsername.equals(username) && !isTokenExpired(token) && !invalidatedTokens.contains(token));
     }
 
+    public void invalidateToken(String token) {
+        invalidatedTokens.add(token);
+    }
 }

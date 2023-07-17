@@ -10,8 +10,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.List;
 
@@ -36,8 +37,8 @@ public class NotebookController {
     }
 
     @GetMapping("/{notebookId}/notelist")
-    public ResponseEntity<List<Note>> getAllNotesInNotebook(HttpServletRequest request, @PathVariable long notebookId) {
-        long userId = (long) request.getAttribute("userID");
+    public ResponseEntity<List<Note>> getAllNotesInNotebook(@PathVariable long notebookId) {
+        long userId = (long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
 
         Notebook notebook = notebookService.getById(notebookId);
         if (notebook == null || notebook.getUserId() != userId) {
@@ -49,8 +50,8 @@ public class NotebookController {
     }
 
     @PostMapping("/{notebookId}/notelist/add")
-    public ResponseEntity<Void> addNoteToNotebook(HttpServletRequest request, @PathVariable long notebookId, @RequestParam long noteId) {
-        long userId = (long) request.getAttribute("userID");
+    public ResponseEntity<Void> addNoteToNotebook( @PathVariable long notebookId, @RequestParam long noteId) {
+        long userId = (long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         Note note = noteService.getNoteById(userId, noteId);
         if (note == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -64,8 +65,8 @@ public class NotebookController {
     }
 
     @DeleteMapping("/{notebookId}/notelist/{noteId}")
-    public ResponseEntity<Void> removeNoteFromNotebook(HttpServletRequest request, @PathVariable long notebookId, @PathVariable long noteId) {
-        long userId = (long) request.getAttribute("userID");
+    public ResponseEntity<Void> removeNoteFromNotebook( @PathVariable long notebookId, @PathVariable long noteId) {
+        long userId = (long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         Note note = noteService.getNoteById(userId, noteId);
         if (note == null || note.getUserId() != userId) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -79,8 +80,8 @@ public class NotebookController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Notebook>> getAllNotebooks(HttpServletRequest request) {
-        long userId = (long) request.getAttribute("userID");
+    public ResponseEntity<List<Notebook>> getAllNotebooks() {
+        long userId = (long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         List<Notebook> notebooks = notebookService.getAllNotebooks(userId);
         for (Notebook nb : notebooks) {
             nb.setNotes(noteService.getAllNotebookNotes(userId, nb.getNotebookId()));
@@ -90,8 +91,8 @@ public class NotebookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Notebook> getNotebookById(HttpServletRequest request, @PathVariable Long id) {
-        long userId = (long) request.getAttribute("userID");
+    public ResponseEntity<Notebook> getNotebookById( @PathVariable long id) {
+        long userId = (long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         Notebook notebook = notebookService.getById(id);
         List<Note> notes = noteService.getAllNotes(userId);
 
@@ -104,8 +105,8 @@ public class NotebookController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Void> createNotebook(HttpServletRequest request, @RequestBody Notebook notebook) {
-        long userId = (long) request.getAttribute("userID");
+    public ResponseEntity<Void> createNotebook( @RequestBody Notebook notebook) {
+        long userId = (long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         notebook.setUserId(userId);
 
         if (!notebookService.doesExist(userId, notebook.getNotebookName()) && notebookService.addNotebook(notebook)) {
@@ -116,8 +117,8 @@ public class NotebookController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateNotebook(HttpServletRequest request, @PathVariable Long id, @RequestBody Notebook notebook) {
-        long userId = (long) request.getAttribute("userID");
+    public ResponseEntity<Void> updateNotebook( @PathVariable long id, @RequestBody Notebook notebook) {
+        long userId = (long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         notebook.setNotebookId(id);
         notebook.setUserId(userId);
 
@@ -129,8 +130,8 @@ public class NotebookController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNotebookById(HttpServletRequest request, @PathVariable Long id) {
-        long userId = (long) request.getAttribute("userID");
+    public ResponseEntity<Void> deleteNotebookById( @PathVariable long id) {
+        long userId = (long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
 
         if (notebookService.getById(id) != null && notebookService.getById(id).getUserId() == userId && notebookService.deleteNotebook(id)) {
             return ResponseEntity.status(HttpStatus.OK).build();

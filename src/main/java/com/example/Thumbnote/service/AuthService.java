@@ -28,27 +28,25 @@ public class AuthService {
         return jwtUtil.getUsernameFromToken(token);
     }
 
-    public ResponseEntity<?> authenticate(String username, String password) {
+    public Map<String, Object> authenticate(String username, String password) {
         if (valid.validLogin(username, password)) {
             String jwt = jwtUtil.generateToken(username);
 
-            return ResponseEntity.ok(Map.of("token", jwt));
+            return Map.of("token", jwt);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid login credentials."));
+            throw new RuntimeException("Invalid login credentials.");
         }
     }
 
 
-    public ResponseEntity<?> logout(String authHeader) {
+    public void logout(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
-//            jwtUtil.invalidateToken(token);
-            return ResponseEntity.ok().build();
+            jwtUtil.invalidateToken(token);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid Token"));
+            throw new RuntimeException("Invalid token.");
         }
     }
+
 }

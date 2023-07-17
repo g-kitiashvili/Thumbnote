@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.List;
 
@@ -31,12 +33,12 @@ public class SearchController {
 
     @GetMapping
     @Secure
-    public ResponseEntity<List<Note>> searchNotes(HttpServletRequest request,
+    public ResponseEntity<List<Note>> searchNotes(
                                                   @RequestParam(required = false) String name,
                                                   @RequestParam(required = false) List<String> tags,
                                                   @RequestParam(required = false, defaultValue = "upload_Date") String sortBy,
                                                   @RequestParam(required = false, defaultValue = "desc") String sortOrder) {
-        long userId = (long) request.getAttribute("userID");
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
 
         List<Note> matchedNotes = noteService.searchNotes(name, tags, sortBy, sortOrder, userId);
 

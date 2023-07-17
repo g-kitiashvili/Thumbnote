@@ -1,23 +1,24 @@
 package com.example.Thumbnote.controller;
 
+import com.example.Thumbnote.annotation.Secure;
 import com.example.Thumbnote.objects.Note;
 import com.example.Thumbnote.service.AuthService;
 import com.example.Thumbnote.service.NoteService;
 import com.example.Thumbnote.service.PdfService;
 import com.example.Thumbnote.utils.JwtUtil;
 import com.itextpdf.text.DocumentException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/pdf")
-@Secured("ROLE_USER")
+@Secure
 public class PdfController {
 
     private final NoteService noteService;
@@ -34,9 +35,9 @@ public class PdfController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<Void> uploadNote(HttpServletRequest request,
+    public ResponseEntity<Void> uploadNote(
                                            @RequestParam("file") MultipartFile file) {
-        long userId = (long) request.getAttribute("userID");
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         Note note = pdfService.createNoteFromPdf(userId, file);
         if (note != null) {
             noteService.createNote(note);
@@ -47,9 +48,9 @@ public class PdfController {
     }
 
     @GetMapping("/download/{id}")
-    public ResponseEntity<byte[]> downloadNoteAsPdf(HttpServletRequest request,
+    public ResponseEntity<byte[]> downloadNoteAsPdf(
                                                     @PathVariable Long id) throws IOException, DocumentException {
-        long userId = (long) request.getAttribute("userID");
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         Note note = noteService.getNoteById(userId, id);
 
         if (note != null) {

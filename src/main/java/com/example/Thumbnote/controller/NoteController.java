@@ -13,6 +13,8 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -36,15 +38,15 @@ public class NoteController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Note>> getAllNotes(HttpServletRequest request) {
-        long userId = (long) request.getAttribute("userID");
+    public ResponseEntity<List<Note>> getAllNotes() {
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         List<Note> notes = noteService.getAllNotes(userId);
         return ResponseEntity.ok(notes);
     }
 
     @GetMapping("/{noteId}")
     public ResponseEntity<Note> getNoteById(HttpServletRequest request, @PathVariable Long noteId) {
-        long userId = (long) request.getAttribute("userID");
+        long userId = (long) request.getAttribute("userId");
         Note note = noteService.getNoteById(userId, noteId);
         if (note == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -53,9 +55,9 @@ public class NoteController {
         }
     }
 
-    @PostMapping("")
+    @PostMapping("/addnote")
     public ResponseEntity<Void> createNote(HttpServletRequest request, @RequestBody Note note) {
-        long userId = (long) request.getAttribute("userID");
+        long userId = (long) request.getAttribute("userId");
         note.setUserId(userId);
         if (noteService.createNote(note)) {
             return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -66,7 +68,7 @@ public class NoteController {
 
     @PutMapping("/{noteId}")
     public ResponseEntity<Void> updateNote(HttpServletRequest request, @PathVariable Long noteId, @RequestBody Note note) throws SQLException {
-        long userId = (long) request.getAttribute("userID");
+        long userId = (long) request.getAttribute("userId");
         note.setUserId(userId);
         note.setNoteId(noteId);
         if (noteService.updateNote(userId,noteId, note)) {
@@ -78,7 +80,7 @@ public class NoteController {
 
     @DeleteMapping("/{noteId}")
     public ResponseEntity<Void> deleteNoteById(HttpServletRequest request, @PathVariable Long noteId) {
-        long userId = (long) request.getAttribute("userID");
+        long userId = (long) request.getAttribute("userId");
         if (noteService.deleteNoteById(userId, noteId)) {
             return ResponseEntity.status(HttpStatus.OK).build();
         } else {
