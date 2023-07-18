@@ -55,14 +55,4 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> start(@RequestHeader("Authorization") String authHeader) {
-        try {
-            authService.logout(authHeader);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
 }

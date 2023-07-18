@@ -390,7 +390,7 @@ public class NoteDAO {
         List<Note> notes = new ArrayList<>();
         try (Connection conn = dataSource.getConnection()) {
             String sql = "SELECT * FROM notes WHERE user_id = ? ";
-            if (name != null) {
+            if (name != null && name=="" ) {
                 sql += "AND note_name LIKE ? ";
             }
             if (tags != null && !tags.isEmpty()) {
@@ -413,7 +413,6 @@ public class NoteDAO {
                 }
             }
 
-            System.out.println("SQL query: " + stmt.toString());
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 long id = rs.getLong("note_id");

@@ -75,6 +75,7 @@ public class NoteService {
     }
 
     public List<Note> searchNotes(String name, List<String> tags, String sortBy, String sortOrder, long userId) {
+//        System.out.println(sortBy+" "+sortOrder);
         return noteDAO.searchNotes(name, tags, sortBy, sortOrder, userId);
     }
 }

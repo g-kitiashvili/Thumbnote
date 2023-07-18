@@ -31,14 +31,6 @@ public class AuthService {
     }
 
 
-    public void logout(String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            jwtUtil.invalidateToken(token);
-        } else {
-            throw new RuntimeException("Invalid token.");
-        }
-    }
+
 
 }
