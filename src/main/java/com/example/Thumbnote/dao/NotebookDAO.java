@@ -1,12 +1,10 @@
 package com.example.Thumbnote.dao;
 
 
-import com.example.Thumbnote.objects.Note;
 import com.example.Thumbnote.objects.Notebook;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.sql.DataSource;

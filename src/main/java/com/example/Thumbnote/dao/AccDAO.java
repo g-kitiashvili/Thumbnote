@@ -56,7 +56,7 @@ public class AccDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, username);
             try (ResultSet resultSet = statement.executeQuery()) {
-                if(resultSet.next())
+                if (resultSet.next())
                     return resultSet.getString(1);
             }
         } catch (SQLException e) {
@@ -72,7 +72,7 @@ public class AccDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, username);
             try (ResultSet resultSet = statement.executeQuery()) {
-                if(resultSet.next())
+                if (resultSet.next())
                     return resultSet.getLong(1);
             }
         } catch (SQLException e) {
@@ -89,7 +89,7 @@ public class AccDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, userId);
             try (ResultSet resultSet = statement.executeQuery()) {
-                if(resultSet.next())
+                if (resultSet.next())
                     return resultSet.getString(1);
             }
         } catch (SQLException e) {

@@ -1,7 +1,6 @@
 package com.example.Thumbnote.service;
 
 import com.example.Thumbnote.dao.NotebookDAO;
-import com.example.Thumbnote.objects.Note;
 import com.example.Thumbnote.objects.Notebook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

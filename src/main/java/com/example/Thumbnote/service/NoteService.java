@@ -46,7 +46,7 @@ public class NoteService {
         return note;
     }
 
-    public boolean createNote( Note note) {
+    public boolean createNote(Note note) {
         return noteDAO.AddNote(note);
     }
 

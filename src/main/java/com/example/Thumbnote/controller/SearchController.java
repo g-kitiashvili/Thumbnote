@@ -3,18 +3,12 @@ package com.example.Thumbnote.controller;
 import com.example.Thumbnote.annotation.Secure;
 import com.example.Thumbnote.objects.Note;
 import com.example.Thumbnote.service.AccountService;
-import com.example.Thumbnote.service.AuthService;
 import com.example.Thumbnote.service.NoteService;
-import com.example.Thumbnote.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
+
 
 import java.util.List;
 
@@ -33,12 +27,12 @@ public class SearchController {
 
     @GetMapping
     @Secure
-    public ResponseEntity<List<Note>> searchNotes(
+    public ResponseEntity<List<Note>> searchNotes(HttpServletRequest request,
                                                   @RequestParam(required = false) String name,
                                                   @RequestParam(required = false) List<String> tags,
                                                   @RequestParam(required = false, defaultValue = "upload_Date") String sortBy,
                                                   @RequestParam(required = false, defaultValue = "desc") String sortOrder) {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        long userId = (long) request.getAttribute("userId");
 
         List<Note> matchedNotes = noteService.searchNotes(name, tags, sortBy, sortOrder, userId);
 

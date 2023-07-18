@@ -6,7 +6,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,21 +30,17 @@ public class PdfService {
 
     public Note createNoteFromPdf(long userId, MultipartFile pdfFile) {
         if (pdfFile == null || pdfFile.getOriginalFilename() == null) {
-            // Return null if the pdfFile parameter is null or the original filename is null
             return null;
-        }        if(!pdfFile.getOriginalFilename().toLowerCase().endsWith(".pdf")) {
+        }
+        if (!pdfFile.getOriginalFilename().toLowerCase().endsWith(".pdf")) {
             return null;
         }
         try (PDDocument document = PDDocument.load(pdfFile.getInputStream())) {
-            // Parse the PDF document and extract the text content
             PDFTextStripper stripper = new PDFTextStripper();
             String pdfText = stripper.getText(document);
+            Note note = new Note(0, 0, 0, new Date(), pdfFile.getOriginalFilename(), pdfText, null, null);
+            note.setUserId(userId);
 
-            // Create a new Note object with the extracted text content and other data
-            Note note = new Note(0,0,0,new Date(),pdfFile.getOriginalFilename(),pdfText,null, null);
-
-
-            // Save the Note object to the database
             boolean success = noteService.createNote(note);
             if (success) {
                 return note;
@@ -53,7 +48,6 @@ public class PdfService {
                 return null;
             }
         } catch (IOException e) {
-            // Handle the IOException and return null
             e.printStackTrace();
             return null;
         }
@@ -69,16 +63,13 @@ public class PdfService {
         return outputStream.toByteArray();
     }
 
-    public ResponseEntity<byte[]> downloadNoteAsPdf(Note note) throws IOException, DocumentException {
+    public byte[] generatePdfBytesFromNote(Long userId, Long noteId) throws IOException, DocumentException {
+        Note note = noteService.getNoteById(userId, noteId);
+
         if (note != null) {
-            byte[] pdfBytes = generatePdfFromNote(note);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDisposition(ContentDisposition.builder("attachment").filename("note.pdf").build());
-            headers.setContentLength(pdfBytes.length);
-            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+            return generatePdfFromNote(note);
         } else {
-            return ResponseEntity.notFound().build();
+            return null;
         }
     }
 }

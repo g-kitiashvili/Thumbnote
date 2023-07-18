@@ -14,14 +14,14 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-public class   NoteDAO {
+public class NoteDAO {
     private final DataSource dataSource;
 
     public NoteDAO(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public long getNoteId(String noteName,long user_id){
+    public long getNoteId(String noteName, long user_id) {
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement("select note_id from notes where note_name=? and user_id=?");
             stmt.setString(1, noteName);
@@ -29,7 +29,7 @@ public class   NoteDAO {
 
             ResultSet rs = stmt.executeQuery();
             stmt.close();
-            if(rs.next()){
+            if (rs.next()) {
                 return rs.getLong(1);
             }
 
@@ -56,6 +56,7 @@ public class   NoteDAO {
         }
         return false;
     }
+
     public boolean addNoteToNotebook(Note note, long notebookId) {
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement notebookStmt = conn.prepareStatement("SELECT COUNT(*) FROM notebooks WHERE notebook_id = ? AND user_id = ?");
@@ -116,7 +117,7 @@ public class   NoteDAO {
             selectRs.close();
             selectStmt.close();
 
-            if (picturePath != null && picturePath!="" && !picturePath.equals(currentPicturePath)) {
+            if (picturePath != null && picturePath != "" && !picturePath.equals(currentPicturePath)) {
                 PreparedStatement updateStmt = conn.prepareStatement("UPDATE notes SET picturePath = ? WHERE user_id = ? AND note_name = ?");
                 updateStmt.setString(1, picturePath);
                 updateStmt.setLong(2, note.getUserId());
@@ -125,7 +126,7 @@ public class   NoteDAO {
                 updateStmt.close();
                 conn.commit();
                 return rowsAffected == 1;
-            } else if ((picturePath == null || picturePath=="") && currentPicturePath != null) {
+            } else if ((picturePath == null || picturePath == "") && currentPicturePath != null) {
                 PreparedStatement deleteStmt = conn.prepareStatement("UPDATE notes SET picturePath = NULL WHERE user_id = ? AND note_name = ?");
                 deleteStmt.setLong(1, note.getUserId());
                 deleteStmt.setString(2, note.getNoteName());
@@ -142,6 +143,7 @@ public class   NoteDAO {
         }
         return false;
     }
+
     public boolean deleteNoteFromNotebook(Note note, long notebookId) {
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement notebookStmt = conn.prepareStatement("SELECT COUNT(*) FROM notebooks WHERE notebook_id = ? AND user_id = ?");
@@ -178,20 +180,20 @@ public class   NoteDAO {
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM notes WHERE note_id = ? and user_id=?");
             stmt.setLong(1, noteId);
-            stmt.setLong(2,userid);
+            stmt.setLong(2, userid);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 long userId = rs.getLong("user_id");
                 String noteName = rs.getString("note_name");
                 String noteText = rs.getString("note");
-                Date uploadDate=rs.getDate("upload_date");
-                long notebookId=rs.getLong("notebook_id");
-                String picturePath=rs.getString("picturePath");
+                Date uploadDate = rs.getDate("upload_date");
+                long notebookId = rs.getLong("notebook_id");
+                String picturePath = rs.getString("picturePath");
 
                 List<String> tags = getTagsForNoteId(userId, noteId);
 
-                note = new Note(noteId, userId,notebookId , uploadDate, noteName, noteText, tags, picturePath);
+                note = new Note(noteId, userId, notebookId, uploadDate, noteName, noteText, tags, picturePath);
             }
 
             rs.close();
@@ -202,7 +204,6 @@ public class   NoteDAO {
 
         return note;
     }
-
 
 
     public List<Note> getAllNotes(long userId) {
@@ -219,7 +220,7 @@ public class   NoteDAO {
                 Date uploadDate = rs.getDate("upload_date");
                 List<String> tags = getTagsForNoteId(id, id);
                 long nbId = rs.getLong("notebook_id");
-                String picturePath=rs.getString("picturePath");
+                String picturePath = rs.getString("picturePath");
 
                 Note note = new Note(id, userId, nbId, uploadDate, noteName, noteText, tags, picturePath);
                 notes.add(note);
@@ -238,33 +239,33 @@ public class   NoteDAO {
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement("UPDATE notes SET user_id = ?, last_access_date = ?, note_name = ?, note = ? WHERE note_id = ?");
             stmt.setLong(1, note.getUserId());
-            stmt.setTimestamp(2,new Timestamp(System.currentTimeMillis()));
+            stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
             stmt.setString(3, note.getNoteName());
             stmt.setString(4, note.getNoteText());
             stmt.setLong(5, note.getNoteId());
             int rowsAffected = stmt.executeUpdate();
             stmt.close();
-            return rowsAffected>0;
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    public boolean deleteNote(Note note,long userId) {
+    public boolean deleteNote(Note note, long userId) {
         try (Connection conn = dataSource.getConnection()) {
-            if(note==null) return false;
+            if (note == null) return false;
             PreparedStatement stmt2 = conn.prepareStatement("delete from tags where note_id = ? and user_id=? ");
             stmt2.setLong(1, note.getNoteId());
-            stmt2.setLong(2,userId);
+            stmt2.setLong(2, userId);
             stmt2.executeUpdate();
             PreparedStatement stmt = conn.prepareStatement("DELETE FROM notes WHERE note_id = ? and user_id = ?");
             stmt.setLong(1, note.getNoteId());
-            stmt.setLong(2,userId);
+            stmt.setLong(2, userId);
             int rowsAffected = stmt.executeUpdate();
             stmt.close();
             stmt2.close();
-            return rowsAffected>0;
+            return rowsAffected > 0;
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -275,11 +276,11 @@ public class   NoteDAO {
     public List<String> getTagsForNoteId(long userId, Long noteId) throws SQLException {
         List<String> tags = new ArrayList<>();
 
-        try (Connection conn = dataSource.getConnection()){
+        try (Connection conn = dataSource.getConnection()) {
 
             PreparedStatement stmt = conn.prepareStatement("SELECT tag_name FROM tags WHERE note_id = ? and user_id= ? ");
             stmt.setLong(1, noteId);
-            stmt.setLong(2,userId);
+            stmt.setLong(2, userId);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -293,12 +294,13 @@ public class   NoteDAO {
 
         return tags;
     }
-    public List<Note> getAllNotebookNotes(long userId, long notebookId){
+
+    public List<Note> getAllNotebookNotes(long userId, long notebookId) {
         List<Note> notes = new ArrayList<>();
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM notes WHERE user_id = ? and notebook_id=?");
             stmt.setLong(1, userId);
-            stmt.setLong(2,notebookId);
+            stmt.setLong(2, notebookId);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -307,9 +309,9 @@ public class   NoteDAO {
                 String noteText = rs.getString("note");
                 Date uploadDate = rs.getDate("upload_date");
                 List<String> tags = getTagsForNoteId(id, id);
-                String picturePath=rs.getString("picturePath");
+                String picturePath = rs.getString("picturePath");
 
-                Note note = new Note(id, userId,notebookId , uploadDate, noteName, noteText, tags, picturePath);
+                Note note = new Note(id, userId, notebookId, uploadDate, noteName, noteText, tags, picturePath);
                 notes.add(note);
             }
 
@@ -358,7 +360,7 @@ public class   NoteDAO {
                     long nbId = noteRs.getLong("notebook_id");
 
                     List<String> newTags = getTagsForNoteId(userId, noteId);
-                    String picturePath=rs.getString("picturePath");
+                    String picturePath = rs.getString("picturePath");
 
                     Note note = new Note(noteId, ownerId, nbId, uploadDate, noteName, noteText, newTags, picturePath);
 
@@ -420,7 +422,7 @@ public class   NoteDAO {
                 Date uploadDate = rs.getTimestamp("upload_date");
                 long nbId = rs.getLong("notebook_id");
                 List<String> noteTags = getTagsForNoteId(id, id);
-                String picturePath=rs.getString("picturePath");
+                String picturePath = rs.getString("picturePath");
 
                 Note note = new Note(id, userId, nbId, uploadDate, noteName, noteText, noteTags, picturePath);
                 notes.add(note);

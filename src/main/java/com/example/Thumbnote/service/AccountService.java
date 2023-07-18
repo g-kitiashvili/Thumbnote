@@ -4,13 +4,10 @@ import com.example.Thumbnote.dao.AccDAO;
 import com.example.Thumbnote.utils.SecurityUtils;
 import com.example.Thumbnote.utils.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class AccountService {
@@ -24,12 +21,12 @@ public class AccountService {
         this.authValidator = authValidator;
     }
 
-    public boolean addAccount (String username, String password, String email) {
+    public boolean addAccount(String username, String password, String email) {
         List<String> errors = authValidator.checkRegisterErrors(username, password, email);
 
         if (!errors.isEmpty()) {
 
-           return false;
+            return false;
         }
 
         String hash = SecurityUtils.hashPassword(password);
@@ -38,9 +35,5 @@ public class AccountService {
 
         return true;
 
-    }
-
-    public long getUserID(String username) {
-        return accDAO.getUserID(username);
     }
 }

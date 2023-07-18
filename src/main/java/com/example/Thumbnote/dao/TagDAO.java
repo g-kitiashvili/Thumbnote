@@ -5,7 +5,6 @@ import com.example.Thumbnote.objects.Note;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
