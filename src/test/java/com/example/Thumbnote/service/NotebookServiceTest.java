@@ -1,7 +1,6 @@
 package com.example.Thumbnote.service;
 
 import com.example.Thumbnote.dao.NotebookDAO;
-import com.example.Thumbnote.objects.Note;
 import com.example.Thumbnote.objects.Notebook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,33 +28,33 @@ class NotebookServiceTest {
     }
 
     @Test
-    void testAddNotebookWithNullParameter() {
+    void addNotebook_withNullParameter_returnsFalse() {
         boolean result = service.addNotebook(null);
         assertEquals(false, result);
     }
 
     @Test
-    void testAddNotebookWithEmptyNotebookName() {
+    void addNotebook_withEmptyNotebookName_returnsFalse() {
         Notebook notebook = new Notebook(1L, "", "This is a test notebook.", 1L);
         boolean result = service.addNotebook(notebook);
         assertEquals(false, result);
     }
 
     @Test
-    void testDeleteNotebookWithInvalidId() {
+    void deleteNotebook_withInvalidId_returnsFalse() {
         long notebookId = -1L;
         boolean result = service.deleteNotebook(notebookId);
         assertEquals(false, result);
     }
 
     @Test
-    void testUpdateNotebookWithNullParameter() {
+    void updateNotebook_withNullParameter_returnsFalse() {
         boolean result = service.updateNotebook(null);
         assertEquals(false, result);
     }
 
     @Test
-    void testAddNotebook() {
+    void addNotebook_returnsTrue() {
         Notebook notebook = new Notebook(1L, "Test Notebook", "This is a test notebook.", 1L);
 
         when(notebookDAO.addNotebook(notebook)).thenReturn(true);
@@ -66,14 +65,14 @@ class NotebookServiceTest {
     }
 
     @Test
-    void testGetAllNotebooksWithInvalidUserId() {
+    void getAllNotebooks_withInvalidUserId_returnsEmptyList() {
         long userId = -1L;
         List<Notebook> result = service.getAllNotebooks(userId);
         assertEquals(0, result.size());
     }
 
     @Test
-    void testDeleteNotebook() {
+    void deleteNotebook_returnsTrue() {
         long notebookId = 1L;
 
         when(notebookDAO.deleteNotebook(notebookId)).thenReturn(true);
@@ -84,7 +83,7 @@ class NotebookServiceTest {
     }
 
     @Test
-    void testDoesExistWithEmptyNotebookName() {
+    void doesExist_withEmptyNotebookName_returnsFalse() {
         long userId = 1L;
         String notebookName = "";
         boolean result = service.doesExist(userId, notebookName);
@@ -92,14 +91,14 @@ class NotebookServiceTest {
     }
 
     @Test
-    void testGetByIdWithInvalidId() {
+    void getById_withInvalidId_returnsNull() {
         long notebookId = -1L;
         Notebook result = service.getById(notebookId);
         assertEquals(null, result);
     }
 
     @Test
-    void testUpdateNotebook() {
+    void updateNotebook_returnsTrue() {
         Notebook notebook = new Notebook(1L, "Test Notebook", "This is a test notebook.", 1L);
 
         when(notebookDAO.updateNotebook(notebook)).thenReturn(true);
@@ -110,7 +109,7 @@ class NotebookServiceTest {
     }
 
     @Test
-    void testGetAllNotebooks() {
+    void getAllNotebooks_returnsListOfNotebooks() {
         long userId = 1L;
 
         when(notebookDAO.getAllNotebooks(userId)).thenReturn(List.of(new Notebook(1L, "Notebook 1", "This is notebook 1.", userId), new Notebook(2L, "Notebook 2", "This is notebook 2.", userId)));
@@ -121,7 +120,7 @@ class NotebookServiceTest {
     }
 
     @Test
-    void testDoesExist() {
+    void doesExist_returnsTrue() {
         long userId = 1L;
         String notebookName = "Test Notebook";
 
@@ -133,7 +132,7 @@ class NotebookServiceTest {
     }
 
     @Test
-    void testGetById() {
+    void getById_returnsNotebook() {
         long notebookId = 1L;
 
         when(notebookDAO.getById(notebookId)).thenReturn(new Notebook(notebookId, "Test Notebook", "This is a test notebook.", 1L));

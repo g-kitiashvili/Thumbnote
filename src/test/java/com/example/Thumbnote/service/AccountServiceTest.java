@@ -1,18 +1,15 @@
 package com.example.Thumbnote.service;
 
 import com.example.Thumbnote.dao.AccDAO;
-import com.example.Thumbnote.utils.JwtUtil;
+import com.example.Thumbnote.utils.SecurityUtils;
 import com.example.Thumbnote.utils.Validator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -22,31 +19,32 @@ class AccountServiceTest {
     @InjectMocks
     private AccountService accService;
 
-
     @Mock
     private Validator authValidator;
 
+    @Mock
+    private AccDAO accDAO;
 
     @Test
-    void testRegisterUser_SuccessfulRegistration() {
+    void testAddAccount_SuccessfulRegistration() {
         // Arrange
         String username = "testUser";
         String password = "testPassword";
         String email = "test@example.com";
 
         when(authValidator.checkRegisterErrors(username, password, email)).thenReturn(List.of());
+        when(accDAO.addAccount(username, SecurityUtils.hashPassword(password), email)).thenReturn(true);
 
-        ResponseEntity<?> response = accService.addAccount(username, password, email);
+        // Act
+        boolean result = accService.addAccount(username, password, email);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertTrue((Boolean) responseBody.get("successful"));
+        // Assert
+        assertTrue(result);
     }
 
     @Test
-    void testRegisterUser_RegistrationErrors() {
-
+    void testAddAccount_RegistrationErrors() {
+        // Arrange
         String username = "testUser";
         String password = "testPassword";
         String email = "test@example.com";
@@ -54,15 +52,10 @@ class AccountServiceTest {
 
         when(authValidator.checkRegisterErrors(username, password, email)).thenReturn(errors);
 
-        ResponseEntity<?> response = accService.addAccount(username, password, email);
+        // Act
+        boolean result = accService.addAccount(username, password, email);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(false, responseBody.get("successful"));
-        assertEquals("Username is not available", responseBody.get("usernameErrorClass"));
-        assertNull(responseBody.get("passwordErrorClass"));
-        assertEquals("Already registered with this Email", responseBody.get("emailErrorClass"));
+        // Assert
+        assertFalse(result);
     }
-
 }

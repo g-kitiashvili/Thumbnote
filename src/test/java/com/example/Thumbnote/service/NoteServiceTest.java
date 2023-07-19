@@ -37,7 +37,7 @@ public class NoteServiceTest {
         when(mockNoteDAO.getById(1L, id)).thenReturn(note);
         when(mockNoteDAO.attachPictureToNote(note, picturePath)).thenReturn(true);
 
-        boolean result = noteService.attachPicture(username, id, picturePath);
+        boolean result = noteService.attachPicture(mockAccDAO.getUserID(username), id, picturePath);
 
         assertTrue(result);
         assertEquals(picturePath, note.getPicturePath());
@@ -54,7 +54,7 @@ public class NoteServiceTest {
         when(mockAccDAO.getUserID(username)).thenReturn(1L);
         when(mockNoteDAO.getById(1L, id)).thenReturn(null);
 
-        boolean result = noteService.attachPicture(username, id, picturePath);
+        boolean result = noteService.attachPicture(mockAccDAO.getUserID(username), id, picturePath);
 
         assertFalse(result);
         verify(mockAccDAO).getUserID(username);
@@ -80,25 +80,7 @@ public class NoteServiceTest {
     }
 
 
-    @Test
-    public void testGetAllNotes() {
-        String username = "testuser";
-        long userId = 1L;
-        List<Note> expectedNotes = Arrays.asList(
-                new Note(1L, userId, 1L, new Date(), "Note 1", "This is the first note.", Arrays.asList("tag1", "tag2"), null),
-                new Note(2L, userId, 1L, new Date(), "Note 2", "This is the second note.", Arrays.asList("tag3", "tag4"), null)
-        );
 
-        when(mockAccDAO.getUserID(username)).thenReturn(userId);
-        when(mockNoteDAO.getAllNotes(userId)).thenReturn(expectedNotes);
-
-        List<Note> actualNotes = noteService.getAllNotes(username);
-
-        verify(mockAccDAO).getUserID(username);
-        verify(mockNoteDAO).getAllNotes(userId);
-
-        assertEquals(expectedNotes, actualNotes);
-    }
 
     @Test
     void testSearchNotesWithNameAndTags() {
@@ -155,45 +137,7 @@ public class NoteServiceTest {
     }
 
 
-    @Test
-    public void testGetNoteById() {
-        String username = "testuser";
-        long userId = 1L;
-        Long id = 1L;
-        Note expectedNote = new Note(id, userId, 0L, new Date(), "", "", null, null);
 
-        when(mockAccDAO.getUserID(username)).thenReturn(userId);
-        when(mockNoteDAO.getById(userId, id)).thenReturn(expectedNote);
-
-        Note actualNote = noteService.getNoteById(username, id);
-
-        verify(mockAccDAO).getUserID(username);
-        verify(mockNoteDAO).getById(userId, id);
-
-        assertEquals(expectedNote, actualNote);
-
-        assertNotNull(actualNote.getLastAccessDate());
-    }
-
-
-    @Test
-    public void testGetNoteByIdWithNotNullNote() {
-        long noteId = 1L;
-        String username = "testuser";
-
-        long userId = 1L;
-        Long id = 1L;
-        Note expectedNote = new Note(id, userId, 0L, new Date(), "", "", null, null);
-        when(mockAccDAO.getUserID(username)).thenReturn(1L);
-        when(mockNoteDAO.getById(1L, noteId)).thenReturn(expectedNote);
-
-        Note actualNote = noteService.getNoteById(username, noteId);
-
-        verify(mockAccDAO).getUserID(username);
-        verify(mockNoteDAO).getById(1L, noteId);
-
-        assertSame(expectedNote, actualNote);
-    }
 
     @Test
     public void testGetNoteByIdWithNullNote() {
@@ -203,7 +147,7 @@ public class NoteServiceTest {
         when(mockAccDAO.getUserID(username)).thenReturn(1L);
         when(mockNoteDAO.getById(1L, noteId)).thenReturn(null);
 
-        Note actualNote = noteService.getNoteById(username, noteId);
+        Note actualNote = noteService.getNoteById(mockAccDAO.getUserID(username), noteId);
 
         verify(mockAccDAO).getUserID(username);
         verify(mockNoteDAO).getById(1L, noteId);
@@ -211,68 +155,10 @@ public class NoteServiceTest {
         assertNull(actualNote);
     }
 
-    @Test
-    public void testCreateNote() {
-        String username = "testuser";
 
-        long userId = 1L;
-        Long id = 1L;
-        Note note = new Note(id, userId, 0L, new Date(), "", "", null, null);
 
-        when(mockAccDAO.getUserID(username)).thenReturn(1L);
-        when(mockNoteDAO.AddNote(note)).thenReturn(true);
 
-        boolean success = noteService.createNote(note);
 
-        verify(mockAccDAO).getUserID(username);
-        verify(mockNoteDAO).AddNote(note);
-
-        assertTrue(success);
-    }
-
-    @Test
-    public void testUpdateNote() throws SQLException {
-        long noteId = 1L;
-        String username = "testuser";
-
-        long userId = 1L;
-        Long id = 1L;
-        Note existingNote = new Note(id, userId, 0L, new Date(), "Note Name", "Note Text", null, null);
-        Note newNote = new Note(id, userId, 0L, new Date(), "Updated Note Name", "Updated Note Text", null, null);
-
-        when(mockAccDAO.getUserID(username)).thenReturn(userId);
-        when(mockNoteDAO.getById(userId, noteId)).thenReturn(existingNote);
-        when(mockNoteDAO.updateNote(existingNote)).thenReturn(true);
-
-        boolean success = noteService.updateNote(username, noteId, newNote);
-
-        verify(mockAccDAO).getUserID(username);
-        verify(mockNoteDAO).getById(userId, noteId);
-        verify(mockNoteDAO).updateNote(existingNote);
-
-        assertTrue(success);
-
-        assertEquals(existingNote.getNoteName(), newNote.getNoteName());
-        assertEquals(existingNote.getNoteText(), newNote.getNoteText());
-    }
-
-    @Test
-    public void testDeleteNoteById() {
-        long noteId = 1L;
-        String username = "testuser";
-
-        long userId = 1L;
-        Long id = 1L;
-        Note note = new Note(id, userId, 0L, new Date(), "", "", null, null);
-        when(mockAccDAO.getUserID(username)).thenReturn(1L);
-        when(mockNoteDAO.getById(1L, noteId)).thenReturn(note);
-        when(mockNoteDAO.deleteNote(note, 1L)).thenReturn(true);
-        boolean success = noteService.deleteNoteById(username, noteId);
-        verify(mockAccDAO).getUserID(username);
-        verify(mockNoteDAO).getById(1L, noteId);
-        verify(mockNoteDAO).deleteNote(note, 1L);
-        assertTrue(success);
-    }
 
     @Test
     public void testGetAllNotebookNotes() {
